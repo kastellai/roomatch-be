@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require('bcrypt');
 
-const User = require('../models/users')
+const User = require('../models/users');
+const { tokenGenerator } = require('../libs/tokenGenerator');
 const mongoose = require('mongoose');
 
 /**
@@ -23,11 +25,16 @@ router.get("/users", async ( _ , res) => {
  * Creates new user based on the request body
  */
 router.post("/users", async (req, res) => {
+  const saltRounds = 10; // data processing time
+  // salt and hash
+  let saltedPassword = await bcrypt.hash(req.body.password, saltRounds);
+  
   const user = new User({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
     surname: req.body.surname,
     email: req.body.email,
+    password: saltedPassword,
     gender: req.body.gender,
     age: req.body.age,
     iam: {
@@ -115,11 +122,10 @@ router.patch("/users/:id", async (req, res) => {
 /**
  * WIP
  * To update the record User with the created room
- * @param userId - userId
+ * @param userId -  is the id of the user in the Users collection
  * @param roomId - roomId created
  */
 const addRoomToUser = async (userId, roomId) => {
-  console.log("SONO IN addRoomToUser")
   User.updateOne({_id: userId}, {$set: { roomId: roomId }})
     .then(result => {
       res.status(200).json(result);
@@ -132,7 +138,7 @@ const addRoomToUser = async (userId, roomId) => {
       });
     });
 }
-exports.addRoomToUser = addRoomToUser ;
+exports.addRoomToUser = addRoomToUser;
 
 /**
  * Deletes the user specified by id
@@ -143,6 +149,73 @@ router.delete("/users/:id", async (req, res) => {
   User.deleteOne({_id: user_id})
     .then(result => res.status(200).json(result))
     .catch(error => res.status(500).json({message: error}));
+});
+
+/**
+ * Saves the generated token for the specific user
+ * @param userId - is the id of the user in the Users collection
+ * @param token - is the generated token to set for the user
+ */
+const setTokenUser = async (userId, token) => {
+  User.updateOne({_id: userId}, {$set: { token: token }})
+  .then(result => console.log("token saved", result))
+  .catch(error => new error);
+}
+
+/**
+ * Logs in the user checking the email and address are correct.
+ * If they are correct, set a token to that user.
+ */
+router.post("/login", async (req, res) => {
+  let logged = false;
+
+  User.find().where({email: req.body.email})
+    .then(
+      async (result) => {
+        result.length > 0
+          ? logged = await bcrypt.compare(req.body.password, result[0].password)
+          : res.status(404).json(
+              {
+                message: "record not found",
+              }
+            );
+        if(logged) {
+          const token = tokenGenerator(32, "#aA");
+          await setTokenUser(result[0]._id.toString(), token);
+          res.status(200).json(result)
+        } else { 
+          res.status(400).json({ message : "wrong password"});
+        }
+      })
+    .catch(error => {
+        res.status(500).json({
+          error: error
+        });
+      }
+    )
+});
+
+/**
+ * Logs out the user removing the token.
+ */
+router.post("/logout", async (req, res) => {
+  User.find().where({email: req.body.email}, {token: req.body.token })
+    .then(
+      async (result) => {
+        if (result.length) {
+          const token = '';
+          await setTokenUser(result[0]._id.toString(), token);
+          res.status(200).json({ message : "user logged out"})
+        } else { 
+          res.status(400).json({ message : "error during login"});
+        }
+      })
+    .catch(error => {
+        res.status(500).json({
+          error: error
+        });
+      }
+    )
 });
 
 module.exports = router;
