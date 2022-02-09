@@ -149,11 +149,11 @@ const setTokenUser = async (userId, token) => {
 router.post("/login", async (req, res) => {
   let logged = false;
 
-  User.find().where({email: req.body.email})
+  User.findOne().where({email: req.body.email})
     .then(
       async (result) => {
-        result.length > 0
-          ? logged = await bcrypt.compare(req.body.password, result[0].password)
+        result 
+          ? logged = await bcrypt.compare(req.body.password, result.password)
           : res.status(404).json(
               {
                 message: "record not found",
@@ -161,7 +161,7 @@ router.post("/login", async (req, res) => {
             );
         if(logged) {
           const token = tokenGenerator(32, "#aA");
-          await setTokenUser(result[0]._id.toString(), token);
+          await setTokenUser(result._id.toString(), token);
           res.status(200).json(result)
         } else { 
           res.status(400).json({ message : "wrong password"});
