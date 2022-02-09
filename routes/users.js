@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
 /**
  * Returns all the users
  */
-router.get("/users", async ( _ , res) => {
+router.get("/users", async (_, res) => {
   User.find()
     .then(docs => {
       res.status(200).json(docs);
@@ -28,7 +28,7 @@ router.post("/users", async (req, res) => {
   const saltRounds = 10; // data processing time
   // salt and hash
   let saltedPassword = await bcrypt.hash(req.body.password, saltRounds);
-  
+
   const user = new User({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
@@ -44,24 +44,25 @@ router.post("/users", async (req, res) => {
       veg: req.body.iam.veg,
       party_lover: req.body.iam.party_lover,
       smooker: req.body.iam.smooker,
-    },  
-    address: req.body.address,
+    },
+    city: req.body.city,
+    town: req.body.town,
     photo: req.body.photo,
     roomId: req.body.roomId
   })
- 
-  User.find().where({email: req.body.email})
+
+  User.find().where({ email: req.body.email })
     .then((result) => {
       result.length
-      ? res.status(200).json({
+        ? res.status(200).json({
           message: "email already present in our system"
         })
-      : user.save().then(
+        : user.save().then(
           result => {
             res.status(201).json(
               {
                 message: "record successfully created",
-                createdUser: result
+                // createdUser: result
               }
             );
           }).catch(error => {
@@ -69,7 +70,7 @@ router.post("/users", async (req, res) => {
               error: error
             });
           }
-        )
+          )
     })
     .catch(error => {
       res.status(500).json({
@@ -86,7 +87,7 @@ router.post("/users", async (req, res) => {
 router.get("/users/:id", async (req, res) => {
   const user_id = req.params["id"];
 
-  User.findById({_id: user_id})
+  User.findById({ _id: user_id })
     .then(result => {
       res.status(200).json(result);
     })
@@ -104,11 +105,11 @@ router.patch("/users/:id", async (req, res) => {
   const userId = req.params["id"];
 
   const updateOps = {};
-  for(const ops of req.body) {
+  for (const ops of req.body) {
     updateOps[ops.propName] = ops.value;
   }
   // {"propName": "name", "value": "new_value"}
-  User.updateOne({_id: userId}, {$set: updateOps})
+  User.updateOne({ _id: userId }, { $set: updateOps })
     .then(result => {
       res.status(200).json(result);
     })
@@ -117,7 +118,7 @@ router.patch("/users/:id", async (req, res) => {
         message: error
       });
     });
-} );
+});
 
 
 /**
@@ -126,9 +127,9 @@ router.patch("/users/:id", async (req, res) => {
 router.delete("/users/:id", async (req, res) => {
   const user_id = req.params["id"];
 
-  User.deleteOne({_id: user_id})
+  User.deleteOne({ _id: user_id })
     .then(result => res.status(200).json(result))
-    .catch(error => res.status(500).json({message: error}));
+    .catch(error => res.status(500).json({ message: error }));
 });
 
 /**
@@ -137,9 +138,9 @@ router.delete("/users/:id", async (req, res) => {
  * @param token - is the generated token to set for the user
  */
 const setTokenUser = async (userId, token) => {
-  User.updateOne({_id: userId}, {$set: { token: token }})
-  .then(result => console.log("token saved", result))
-  .catch(error => new error);
+  User.updateOne({ _id: userId }, { $set: { token: token } })
+    .then(result => result)
+    .catch(error => new error);
 }
 
 /**
@@ -149,52 +150,53 @@ const setTokenUser = async (userId, token) => {
 router.post("/login", async (req, res) => {
   let logged = false;
 
-  User.find().where({email: req.body.email})
+  User.findOne().where({ email: req.body.email }).select('+password')
     .then(
       async (result) => {
-        result.length > 0
-          ? logged = await bcrypt.compare(req.body.password, result[0].password)
+        result
+          ? logged = await bcrypt.compare(req.body.password, result.password)
           : res.status(404).json(
-              {
-                message: "record not found",
-              }
-            );
-        if(logged) {
+            {
+              message: "record not found",
+            }
+          );
+        if (logged) {
           const token = tokenGenerator(32, "#aA");
-          await setTokenUser(result[0]._id.toString(), token);
-          res.status(200).json(result)
-        } else { 
-          res.status(400).json({ message : "wrong password"});
+          await setTokenUser(result._id.toString(), token);
+
+          await User.findById({ _id: result._id.toString() })
+            .then((user) => res.status(200).json(user));
+        } else {
+          res.status(400).json({ message: "wrong password" });
         }
       })
     .catch(error => {
-        res.status(500).json({
-          error: error
-        });
-      }
-    )
+      res.status(500).json({
+        error: "Error during login"
+      });
+    })
 });
 
 /**
  * Logs out the user removing the token.
  */
 router.post("/logout", async (req, res) => {
-  User.find().where({email: req.body.email}, {token: req.body.token })
+  User.find().where({ email: req.body.email }, { token: req.body.token })
     .then(
       async (result) => {
         if (result.length) {
           const token = '';
           await setTokenUser(result[0]._id.toString(), token);
-          res.status(200).json({ message : "user logged out"})
-        } else { 
-          res.status(400).json({ message : "error during login"});
+          res.status(200).json({ message: "user logged out" })
+        } else {
+          res.status(400).json({ message: "error during login" });
         }
       })
     .catch(error => {
-        res.status(500).json({
-          error: error
-        });
-      }
+      res.status(500).json({
+        error: error
+      });
+    }
     )
 });
 

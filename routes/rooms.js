@@ -41,8 +41,8 @@ router.post("/rooms", async (req, res) => {
     roomOwner: ObjectId(req.body.roomOwner),
     roomType: req.body.roomType,
     roomAddress: req.body.roomAddress,
-    roomProv: req.body.roomProv,
-    roomCom: req.body.roomCom,
+    city: req.body.city,
+    town: req.body.town,
     roomPhotos: req.body.roomPhotos,
     roommates: {
       females: req.body.roommates.females,
