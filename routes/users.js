@@ -150,17 +150,10 @@ const setTokenUser = async (userId, token) => {
 router.post("/login", async (req, res) => {
   let logged = false;
 
-<<<<<<< HEAD
   User.findOne().where({email: req.body.email})
     .then(
       async (result) => {
         result 
-=======
-  User.findOne().where({ email: req.body.email }).select('+password')
-    .then(
-      async (result) => {
-        result
->>>>>>> 43f2fcedbe92f94ada220256e3df839130948fa0
           ? logged = await bcrypt.compare(req.body.password, result.password)
           : res.status(404).json(
             {
@@ -170,17 +163,9 @@ router.post("/login", async (req, res) => {
         if (logged) {
           const token = tokenGenerator(32, "#aA");
           await setTokenUser(result._id.toString(), token);
-<<<<<<< HEAD
           res.status(200).json(result)
         } else { 
           res.status(400).json({ message : "wrong password"});
-=======
-
-          await User.findById({ _id: result._id.toString() })
-            .then((user) => res.status(200).json(user));
-        } else {
-          res.status(400).json({ message: "wrong password" });
->>>>>>> 43f2fcedbe92f94ada220256e3df839130948fa0
         }
       })
     .catch(error => {
