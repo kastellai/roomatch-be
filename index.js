@@ -11,6 +11,7 @@ mongoose.connect(`mongodb+srv://roomatch:${uri}@roomatch.ufike.mongodb.net/rooma
 
 const cors = require("cors");
 const usersRouter = require("./routes/users");
+const roomsRouter = require("./routes/rooms");
 const homePageRouter = require("./routes/home");
 
 express()
@@ -22,6 +23,7 @@ express()
   .set("view engine", "ejs")
   .use(homePageRouter)
   .use(usersRouter)
+  .use(roomsRouter)
 
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
 

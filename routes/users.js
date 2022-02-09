@@ -119,26 +119,6 @@ router.patch("/users/:id", async (req, res) => {
     });
 } );
 
-/**
- * WIP
- * To update the record User with the created room
- * @param userId -  is the id of the user in the Users collection
- * @param roomId - roomId created
- */
-const addRoomToUser = async (userId, roomId) => {
-  User.updateOne({_id: userId}, {$set: { roomId: roomId }})
-    .then(result => {
-      res.status(200).json(result);
-      console.log("SAVED IN addRoomToUser")
-    })
-    .catch(error => {
-      console.log("ERROR IN addRoomToUser")
-      res.status(500).json({
-        message: error
-      });
-    });
-}
-exports.addRoomToUser = addRoomToUser;
 
 /**
  * Deletes the user specified by id
