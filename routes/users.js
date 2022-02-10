@@ -150,7 +150,7 @@ const setTokenUser = async (userId, token) => {
 router.post("/login", async (req, res) => {
   let logged = false;
 
-  User.findOne().where({email: req.body.email})
+  User.findOne().where({email: req.body.email}).select('+password')
     .then(
       async (result) => {
         result 
