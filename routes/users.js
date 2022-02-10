@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 const User = require('../models/users');
+const Room = require('../models/room');
 const { tokenGenerator } = require('../libs/tokenGenerator');
 const mongoose = require('mongoose');
 
@@ -196,6 +197,51 @@ router.post("/logout", async (req, res) => {
       });
     }
     )
+});
+
+/** 
+ * Returns the current user's ads (only 1 ads should be allowed)
+ */
+router.get("/users/:id/adsroom", async (req, res) => {
+  const userId = req.params["id"];
+  Room.findOne().where({ roomOwner: userId })
+    .then(room => {
+      room
+        ? res.status(200).json(room)
+        : res.status(200).json({ message: "No room present for current user!" })
+    })
+    .catch(error => {
+      res.status(500).json({
+        message: error
+      });
+    });
+});
+
+/**
+ * Returns the list of people interested to the user's room.
+ */
+router.get("/users/:id/likesroom", async (req, res) => {
+  const userId = req.params["id"];
+  Room.findOne().where({ roomOwner: userId })
+    .then(room => {
+      room
+        ? (User.find().where({ '_id': { $in: room.wholikesme } })
+          .then(users => res.status(200).json(users))
+          // a questo punto, ho la lista di utenti interessati alla mia camera. Per verificare che ci sia gia il match:
+          // si controlla l array wholikesme salvato nello storage dell utente ?
+          //
+          // for userId in users
+          //  if  localStorageUtente.wholikesme contains userId -> esiste il match quindi chat ok
+          // else -> "Potenziale coinquilino, ti potrebbe interessare?"
+          //
+        )
+        : res.status(200).json({ message: "No user interested in the current ads!" })
+    })
+    .catch(error => {
+      res.status(500).json({
+        message: error
+      });
+    });
 });
 
 module.exports = router;

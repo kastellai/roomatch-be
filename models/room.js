@@ -21,8 +21,8 @@ const roomSchema = new Schema({
     party_lover: Number,
     smooker: Number,
   },
-  ilike: [mongoose.Schema.Types.ObjectId],
-  wholikesme: [mongoose.Schema.Types.ObjectId],
+  ilike: [String],
+  wholikesme: [String],
 });
 
 const Room = mongoose.model('Room', roomSchema);
