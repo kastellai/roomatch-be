@@ -24,8 +24,8 @@ const userSchema = mongoose.Schema({
   city: { type: String, required: true },
   town: { type: String, required: true },
   photo: { type: String, required: true },
-  roomId: { type: String, default: "" },
-  token: { type: String, default: "" }
+  roomId: { type: String },
+  token: { type: String }
 });
 
 module.exports = mongoose.model('User', userSchema);
