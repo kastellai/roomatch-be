@@ -112,7 +112,13 @@ router.patch("/users/:id", async (req, res) => {
   // {"propName": "name", "value": "new_value"}
   User.updateOne({ _id: userId }, { $set: updateOps })
     .then(result => {
-      res.status(200).json(result);
+      User.findOne().where({ '_id': userId })
+          .then(users => res.status(200).json(users))
+          .catch(error => {
+            res.status(500).json({
+              message: error
+            });
+          });
     })
     .catch(error => {
       res.status(500).json({
