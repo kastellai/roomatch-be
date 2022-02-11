@@ -24,7 +24,22 @@ const userSchema = mongoose.Schema({
   city: { type: String, required: true },
   town: { type: String, required: true },
   photo: { type: String, required: true },
-  roomId: { type: String },
+  roomId: {
+    roomId: String,
+    roomType: String,
+    city: String,
+    town: String,
+    roomPhotos: String,
+    friendlyWith: {
+      lgbtq: Number,
+      multicultural: Number,
+      pet_owner: Number,
+      veg: Number,
+      party_lover: Number,
+      smooker: Number,
+    },
+    wholikesme: [String],
+  },
   token: { type: String }
 });
 

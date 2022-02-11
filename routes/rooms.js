@@ -63,7 +63,18 @@ router.post("/rooms", async (req, res) => {
   room.save()
     .then(
       result => {
-        addRoomToUser(req.body.roomOwner, result._id.toString());
+        // addRoomToUser(req.body.roomOwner, result._id.toString());
+        const roomPreview = {
+          roomId: result._id.toString(),
+          roomType: result.roomType,
+          city: result.city,
+          town: result.town,
+          roomPhotos: result.roomPhotos[0],
+          friendlyWith: result.friendlyWith,
+          wholikesme: result.wholikesme,
+        };
+
+        addRoomToUser(req.body.roomOwner, roomPreview);
         res.status(201).json(
           {
             message: "record successfully created",
@@ -105,8 +116,23 @@ router.patch("/rooms/:id", async (req, res) => {
   // {"propName": "name", "value": "new_value"}
 
   Room.updateOne({ _id: roomId }, { $set: updateOps })
-    .then(result => {
-      res.status(200).json(result);
+    .then(_ => {
+      Room.findById({ _id: roomId })
+        .then(result => {
+          const roomPreview = {
+            roomId: result._id.toString(),
+            roomType: result.roomType,
+            city: result.city,
+            town: result.town,
+            roomPhotos: result.roomPhotos[0],
+            friendlyWith: result.friendlyWith,
+            wholikesme: result.wholikesme,
+          };
+
+          addRoomToUser(result.roomOwner, roomPreview);
+          res.status(200).json(result);
+        })
+
     })
     .catch(error => {
       res.status(500).json({

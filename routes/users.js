@@ -49,13 +49,28 @@ router.post("/users", async (req, res) => {
     city: req.body.city,
     town: req.body.town,
     photo: req.body.photo,
-    roomId: req.body.roomId
+    roomId: {
+      roomId: "",
+      roomType: "",
+      city: "",
+      town: "",
+      roomPhotos: "",
+      friendlyWith: {
+        lgbtq: "",
+        multicultural: "",
+        pet_owner: "",
+        veg: "",
+        party_lover: "",
+        smooker: "",
+      },
+      wholikesme: [],
+    },
   })
 
   User.find().where({ email: req.body.email })
     .then((result) => {
       result.length
-        ? res.status(200).json({
+        ? res.status(400).json({
           message: "email already present in our system"
         })
         : user.save().then(
@@ -113,12 +128,12 @@ router.patch("/users/:id", async (req, res) => {
   User.updateOne({ _id: userId }, { $set: updateOps })
     .then(result => {
       User.findOne().where({ '_id': userId })
-          .then(users => res.status(200).json(users))
-          .catch(error => {
-            res.status(500).json({
-              message: error
-            });
+        .then(users => res.status(200).json(users))
+        .catch(error => {
+          res.status(500).json({
+            message: error
           });
+        });
     })
     .catch(error => {
       res.status(500).json({
@@ -157,10 +172,10 @@ const setTokenUser = async (userId, token) => {
 router.post("/login", async (req, res) => {
   let logged = false;
 
-  User.findOne().where({email: req.body.email}).select('+password')
+  User.findOne().where({ email: req.body.email }).select('+password')
     .then(
       async (result) => {
-        result 
+        result
           ? logged = await bcrypt.compare(req.body.password, result.password)
           : res.status(404).json(
             {
@@ -171,8 +186,8 @@ router.post("/login", async (req, res) => {
           const token = tokenGenerator(32, "#aA");
           await setTokenUser(result._id.toString(), token);
           res.status(200).json(result)
-        } else { 
-          res.status(400).json({ message : "wrong password"});
+        } else {
+          res.status(400).json({ message: "wrong password" });
         }
       })
     .catch(error => {
