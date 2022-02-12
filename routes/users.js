@@ -2,11 +2,12 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
+const mongoose = require('mongoose');
+const { tokenGenerator } = require('../libs/tokenGenerator');
+
 const User = require('../models/users');
 const Room = require('../models/room');
-const { tokenGenerator } = require('../libs/tokenGenerator');
-const mongoose = require('mongoose');
-
+const { addRoomToUser, updateRoomPreview, usersInterestedInRoom } = require('../routes/mixutils')
 /**
  * Returns all the users
  */
@@ -74,7 +75,7 @@ router.post("/users", async (req, res) => {
           message: "email already present in our system"
         })
         : user.save().then(
-          result => {
+          _ => {
             res.status(201).json(
               {
                 message: "record successfully created",
@@ -85,8 +86,7 @@ router.post("/users", async (req, res) => {
             res.status(500).json({
               error: error
             });
-          }
-          )
+          })
     })
     .catch(error => {
       res.status(500).json({
@@ -126,7 +126,7 @@ router.patch("/users/:id", async (req, res) => {
   }
   // {"propName": "name", "value": "new_value"}
   User.updateOne({ _id: userId }, { $set: updateOps })
-    .then(result => {
+    .then(_ => {
       User.findOne().where({ '_id': userId })
         .then(users => res.status(200).json(users))
         .catch(error => {
@@ -241,14 +241,19 @@ router.get("/users/:id/adsroom", async (req, res) => {
 /**
  * Returns the list of people interested to the user's room.
  */
-router.get("/users/:id/likesroom", async (req, res) => {
+router.get("/users/:id/wholikesmyroom", async (req, res) => {
   const userId = req.params["id"];
+
   Room.findOne().where({ roomOwner: userId })
     .then(room => {
       room
         ? (User.find().where({ '_id': { $in: room.wholikesme } })
-          .then(users => res.status(200).json(users))
-          // a questo punto, ho la lista di utenti interessati alla mia camera. Per verificare che ci sia gia il match:
+          .then(users => {
+            const usersList = [];
+            users.forEach(user => usersList.push(usersInterestedInRoom(user)))
+            res.status(200).json(usersList)
+          })
+          // TODO - a questo punto, ho la lista di utenti interessati alla mia camera. Per verificare che ci sia gia il match:
           // si controlla l array wholikesme salvato nello storage dell utente ?
           //
           // for userId in users
@@ -264,5 +269,81 @@ router.get("/users/:id/likesroom", async (req, res) => {
       });
     });
 });
+
+/** 
+ * Adds the like to the current user:
+ * - adds the current user roomId to target user.wholikesme
+ * - adds the target user._id to my user.ilike
+ **/
+router.patch("/users/:id/addlike", async (req, res) => {
+  const userId = req.params["id"];
+
+  // payload
+  // { 
+  //   roomilike: storage user.roomId.ilike  + :id
+  //   roomId: storage user.roomId.roomId
+  // }
+
+  User.findById({ _id: userId })
+    .then(async (result) => {
+      let wholikesme = result.wholikesme;
+      wholikesme.push(req.body.roomId);
+
+      await User.updateOne({ _id: userId }, { $set: { wholikesme: wholikesme } });
+      await Room.updateOne({ _id: req.body.roomId }, { $set: { ilike: req.body.roomilike } });
+
+      // update room preview in user record
+      Room.findById({ _id: req.body.roomId })
+        .then(async (result) => {
+          await addRoomToUser(result.roomOwner, updateRoomPreview(result));
+
+          User.findById({ _id: result.roomOwner })
+            .then(userUpdated => res.status(200).json(userUpdated));
+        })
+    })
+    .catch(error => {
+      res.status(500).json({
+        message: error
+      });
+    });
+});
+
+/** 
+ * Removes the like to the current user:
+ * - removes the current user roomId from taregt user.wholikesme
+ * - removes the target user._id from my user.roomId.ilike
+ **/
+router.patch("/users/:id/removelike", async (req, res) => {
+  const userId = req.params["id"];
+
+  // payload
+  // { 
+  //   roomilike: storage user.roomId.ilike  - :id
+  //   roomId: storage user.roomId.roomId
+  // }
+
+  User.findById({ _id: userId })
+    .then(async (result) => {
+      let wholikesme = result.wholikesme;
+      wholikesme = wholikesme.filter(id => id !== req.body.roomId)
+
+      await User.updateOne({ _id: userId }, { $set: { wholikesme: wholikesme } });
+      await Room.updateOne({ _id: req.body.roomId }, { $set: { ilike: req.body.roomilike } });
+
+      // update room preview in user record
+      Room.findById({ _id: req.body.roomId })
+        .then(result => {
+          addRoomToUser(result.roomOwner, updateRoomPreview(result));
+          User.findById({ _id: result.roomOwner })
+            .then(userUpdated => res.status(200).json(userUpdated));
+        })
+    })
+    .catch(error => {
+      res.status(500).json({
+        message: error
+      });
+    });
+});
+
 
 module.exports = router;

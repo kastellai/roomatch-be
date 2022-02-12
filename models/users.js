@@ -9,7 +9,7 @@ const userSchema = mongoose.Schema({
   surname: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true, select: false },
-  gender: { type: String, required: true, enum: ["F", "M"] },
+  gender: { type: String, required: true, enum: ["Female", "Male", "Other"] },
   age: { type: Number, required: true },
   iam: {
     lgbtq: Number,
@@ -39,6 +39,7 @@ const userSchema = mongoose.Schema({
       smooker: Number,
     },
     wholikesme: [String],
+    ilike: [String],
   },
   token: { type: String }
 });
