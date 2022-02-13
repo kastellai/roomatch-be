@@ -7,7 +7,7 @@ const { tokenGenerator } = require('../libs/tokenGenerator');
 
 const User = require('../models/users');
 const Room = require('../models/room');
-const { addRoomToUser, updateRoomPreview, usersInterestedInRoom, previewWhoLikesMe, getUserData } = require('../routes/mixutils')
+const { addRoomToUser, updateRoomPreview, usersInterestedInRoom, previewWhoLikesMe, getUserData, checkMatch } = require('../routes/mixutils')
 /**
  * Returns all the users
  */
@@ -192,7 +192,14 @@ router.post("/login", async (req, res) => {
         if (logged) {
           const token = tokenGenerator(32, "#aA");
           await setTokenUser(result._id.toString(), token);
-          res.status(200).json(result)
+          User.find().where({ '_id': { $in: result.wholikesme } })
+            .then(users => {
+              const usersList = [];
+              users.forEach(user => usersList.push(previewWhoLikesMe(user)))
+              res.status(200).json(
+                getUserData(result, usersList)
+              )
+            })
         } else {
           res.status(400).json({ message: "wrong password" });
         }
@@ -313,7 +320,7 @@ router.patch("/users/:id/addlike", async (req, res) => {
         message: error
       });
     });
-  // await checkMatch(userId, req.body.roomId);
+  await checkMatch(userId, req.body.roomId);
 
 });
 

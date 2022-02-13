@@ -23,6 +23,7 @@ const roomSchema = new Schema({
   },
   ilike: [String],
   wholikesme: [String],
+  matches: [String],
 });
 
 const Room = mongoose.model('Room', roomSchema);

@@ -6,7 +6,7 @@ const { ObjectId } = require("mongodb");
 
 const Room = require('../models/room')
 const User = require('../models/users')
-const { addRoomToUser, updateRoomPreview, usersInterestedInRoom } = require('../routes/mixutils')
+const { addRoomToUser, updateRoomPreview, usersInterestedInRoom, checkMatch } = require('../routes/mixutils')
 
 
 router.get("/rooms", async (req, res) => {
@@ -129,21 +129,6 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
       let wholikesme = result.wholikesme;
       wholikesme.push(req.body.userId);
 
-      //   Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } })
-      //     .then(_ => {
-      //       User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } })
-      //         .then(_ => {
-      //           // update room preview in user record
-      //           Room.findById({ _id: roomId })
-      //             .then(result => {
-      //               addRoomToUser(result.roomOwner, updateRoomPreview(result));
-      //             })
-      //           User.findById({ _id: req.body.userId }).then(userUpdated => res.status(200).json(userUpdated)
-      //           )
-      //         });
-      //     });
-      // })
-
       await Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } });
       await User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } });
 
@@ -161,7 +146,7 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
       });
     });
 
-  // await checkMatch(req.body.userId, roomId);
+  await checkMatch(req.body.userId, roomId);
 });
 
 /**

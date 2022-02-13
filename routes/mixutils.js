@@ -69,3 +69,46 @@ exports.getUserData = (updates, wholikesme) => {
     ilike: updates.ilike
   }
 }
+
+const updatedUserMatches = async function (userIlike, roomIlike) {
+  // console.log(`MATCH! User likes the room `)
+  const updatedUserIlike = userIlike.ilike.filter(room => room !== roomIlike._id.toString());
+  const updatedUserWholikesme = userIlike.wholikesme.filter(room => room !== roomIlike._id.toString());
+  const updatedUserMatches = [...userIlike.matches, roomIlike._id.toString()];
+
+  const updatedRooomIlike = roomIlike.ilike.filter(user => user !== userIlike._id.toString());
+  const updatedRooomWholikesme = roomIlike.wholikesme.filter(user => user !== userIlike._id.toString());
+  const updatedRooomMatches = [...roomIlike.matches, userIlike._id.toString()];
+
+  await Room.updateOne({ _id: roomIlike._id.toString() }, { $set: { "ilike": updatedRooomIlike, "wholikesme": updatedRooomWholikesme, "matches": updatedRooomMatches } });
+  await User.updateOne({ _id: roomIlike.roomOwner }, { $set: { "roomId.ilike": updatedRooomIlike, "roomId.wholikesme": updatedRooomWholikesme, "roomId.matches": updatedRooomMatches } })
+  await User.updateOne({ _id: userIlike._id.toString() }, { $set: { "ilike": updatedUserIlike, "wholikesme": updatedUserWholikesme, "matches": updatedUserMatches } })
+
+}
+
+
+/**
+ * Checks if the match user-room exists
+ * @param userId - is the id of the user in the Users collection
+ * @param roomId - roomId created
+ */
+exports.checkMatch = async (userId, roomId) => {
+  const userIlike = await User.findById({ _id: userId })
+    .then(userData => userData)
+    .catch((error) => {
+      new Error(error);
+    });
+
+  const roomIlike = await Room.findById({ _id: roomId })
+    .then(roomData => roomData)
+    .catch((error) => {
+      new Error(error);
+    });
+
+  const roomMatched = userIlike.ilike?.length ? userIlike.ilike.filter(room => room === roomId) : [];
+  const userMatched = roomIlike.ilike?.length ? roomIlike.ilike.filter(user => user === userId) : [];
+
+  (roomMatched.length > 0 && userMatched.length > 0)
+    ? updatedUserMatches(userIlike, roomIlike)
+    : console.log("no match yet :( ")
+}

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 // https://mongoosejs.com/docs/schematypes.html
 // https://stackabuse.com/mongoose-with-nodejs-object-data-modeling/
-// //https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
+// https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
 
 const userSchema = mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
@@ -21,6 +21,7 @@ const userSchema = mongoose.Schema({
   },
   ilike: [String],
   wholikesme: [String],
+  matches: [String],
   city: { type: String, required: true },
   town: { type: String, required: true },
   photo: { type: String, required: true },
@@ -40,6 +41,7 @@ const userSchema = mongoose.Schema({
     },
     wholikesme: [String],
     ilike: [String],
+    matches: [String],
   },
   token: { type: String }
 });
