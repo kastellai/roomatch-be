@@ -124,30 +124,44 @@ router.delete("/rooms/:id", async (req, res) => {
 router.patch("/rooms/:id/addlike", async (req, res) => {
   const roomId = req.params["id"];
 
-  Room.findById({ _id: roomId })
-    .then(result => {
+  await Room.findById({ _id: roomId })
+    .then(async (result) => {
       let wholikesme = result.wholikesme;
       wholikesme.push(req.body.userId);
 
-      Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } })
-        .then(_ => {
-          User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } })
-            .then(_ => {
-              // update room preview in user record
-              Room.findById({ _id: roomId })
-                .then(result => {
-                  addRoomToUser(result.roomOwner, updateRoomPreview(result));
-                })
-              User.findById({ _id: req.body.userId }).then(userUpdated => res.status(200).json(userUpdated)
-              )
-            });
-        });
+      //   Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } })
+      //     .then(_ => {
+      //       User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } })
+      //         .then(_ => {
+      //           // update room preview in user record
+      //           Room.findById({ _id: roomId })
+      //             .then(result => {
+      //               addRoomToUser(result.roomOwner, updateRoomPreview(result));
+      //             })
+      //           User.findById({ _id: req.body.userId }).then(userUpdated => res.status(200).json(userUpdated)
+      //           )
+      //         });
+      //     });
+      // })
+
+      await Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } });
+      await User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } });
+
+      // update room preview in user record
+      await Room.findById({ _id: roomId })
+        .then(result => {
+          addRoomToUser(result.roomOwner, updateRoomPreview(result));
+        })
+      User.findById({ _id: req.body.userId }).then(userUpdated => res.status(200).json(userUpdated));
     })
+
     .catch(error => {
       res.status(500).json({
         message: error
       });
     });
+
+  // await checkMatch(req.body.userId, roomId);
 });
 
 /**

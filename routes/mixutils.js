@@ -1,6 +1,6 @@
 
 const User = require('../models/users')
-
+const Room = require('../models/room');
 /**
  * To update the record User with the created room id
  * @param userId - is the id of the user in the Users collection
@@ -26,6 +26,7 @@ exports.updateRoomPreview = (updates) => {
     friendlyWith: updates.friendlyWith,
     wholikesme: updates.wholikesme,
     ilike: updates.ilike,
+    matches: updates.matches,
   };
 }
 
@@ -40,4 +41,31 @@ exports.usersInterestedInRoom = (updates) => {
     surname: updates.surname,
     gender: updates.gender,
   };
+}
+
+exports.previewWhoLikesMe = (updates) => {
+  return {
+    photo: updates.photo,
+    name: updates.name,
+    surname: updates.surname,
+    city: updates.city,
+    town: updates.town,
+  }
+}
+
+exports.getUserData = (updates, wholikesme) => {
+  return {
+    name: updates.name,
+    surname: updates.surname,
+    email: updates.email,
+    gender: updates.gender,
+    age: updates.age,
+    iam: updates.iam,
+    city: updates.city,
+    town: updates.town,
+    photo: updates.photo,
+    roomId: updates.roomId,
+    wholikesme: wholikesme,
+    ilike: updates.ilike
+  }
 }

@@ -7,7 +7,7 @@ const { tokenGenerator } = require('../libs/tokenGenerator');
 
 const User = require('../models/users');
 const Room = require('../models/room');
-const { addRoomToUser, updateRoomPreview, usersInterestedInRoom } = require('../routes/mixutils')
+const { addRoomToUser, updateRoomPreview, usersInterestedInRoom, previewWhoLikesMe, getUserData } = require('../routes/mixutils')
 /**
  * Returns all the users
  */
@@ -105,7 +105,14 @@ router.get("/users/:id", async (req, res) => {
 
   User.findById({ _id: user_id })
     .then(result => {
-      res.status(200).json(result);
+      User.find().where({ '_id': { $in: result.wholikesme } })
+        .then(users => {
+          const usersList = [];
+          users.forEach(user => usersList.push(previewWhoLikesMe(user)))
+          res.status(200).json(
+            getUserData(result, usersList)
+          )
+        })
     })
     .catch(error => {
       res.status(500).json({
@@ -284,7 +291,7 @@ router.patch("/users/:id/addlike", async (req, res) => {
   //   roomId: storage user.roomId.roomId
   // }
 
-  User.findById({ _id: userId })
+  await User.findById({ _id: userId })
     .then(async (result) => {
       let wholikesme = result.wholikesme;
       wholikesme.push(req.body.roomId);
@@ -306,6 +313,8 @@ router.patch("/users/:id/addlike", async (req, res) => {
         message: error
       });
     });
+  // await checkMatch(userId, req.body.roomId);
+
 });
 
 /** 
