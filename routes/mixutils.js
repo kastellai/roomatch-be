@@ -68,7 +68,8 @@ exports.getUserData = (updates, wholikesme) => {
     roomId: updates.roomId,
     wholikesme: wholikesme,
     ilike: updates.ilike,
-    matches: updates.matches
+    matches: updates.matches,
+    messages: updates.messages
   }
 }
 

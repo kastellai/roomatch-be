@@ -43,6 +43,7 @@ const userSchema = mongoose.Schema({
     ilike: [String],
     matches: [String],
   },
+  messages: {type: Object},
   token: { type: String }
 });
 
