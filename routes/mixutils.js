@@ -55,6 +55,7 @@ exports.previewWhoLikesMe = (updates) => {
 
 exports.getUserData = (updates, wholikesme) => {
   return {
+    _id: updates._id,
     name: updates.name,
     surname: updates.surname,
     email: updates.email,
