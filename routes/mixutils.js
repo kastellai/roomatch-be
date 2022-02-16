@@ -56,103 +56,109 @@ const getUserInfo = async (usersId) => {
   let newUsers = [];
   let promises = [];
   usersId.map(async (single) => {
-    promises.push(new Promise((resolve, reject) => {
-      User.findOne()
-      .where({ _id: single })
-      .then((result) => {
-        resolve(single)
-        newUsers = [
-          ...newUsers, 
-          {
-            name: result.name,
-            surname: result.surname,
-            photo: result.photo,
-            city: result.city,
-            town: result.town,
-            id: result.id,
-            room: {
-              roomId: result.roomId.roomId,
-              roomType: result.roomId.roomType,
-              city: result.roomId.city,
-              town: result.roomId.town,
-              roomPhotos: result.roomId.roomPhotos,
-              friendlyWith: result.roomId.friendlyWith,
-            }
-          }
-        ]
+    promises.push(
+      new Promise((resolve, reject) => {
+        User.findOne()
+          .where({ _id: single })
+          .then((result) => {
+            resolve(single);
+            newUsers = [
+              ...newUsers,
+              {
+                name: result.name,
+                surname: result.surname,
+                photo: result.photo,
+                city: result.city,
+                town: result.town,
+                id: result.id,
+                room: {
+                  roomId: result.roomId.roomId,
+                  roomType: result.roomId.roomType,
+                  city: result.roomId.city,
+                  town: result.roomId.town,
+                  roomPhotos: result.roomId.roomPhotos,
+                  friendlyWith: result.roomId.friendlyWith,
+                },
+              },
+            ];
+          });
       })
-    }))
-  })
+    );
+  });
 
-  await Promise.all(promises)
-  return newUsers
-}
+  await Promise.all(promises);
+  return newUsers;
+};
 
 const getRoomInfo = async (roomsId) => {
   let newRooms = [];
   let promises = [];
   roomsId.map(async (single) => {
-    promises.push(new Promise((resolve, reject) => {
-      Room.findOne()
-      .where({ _id: single })
-      .then((result) => {
-        resolve(single)
-        newRooms = [
-          ...newRooms, 
-          {
-            roomId: result._id,
-            roomOwner: result.roomOwner,
-            roomOwner: result.roomOwner,
-            roomType: result.roomType,
-            roomAddress: result.roomAddress,
-            city: result.city,
-            town: result.town,
-            friendlyWith: result.friendlyWith
-          }
-        ]
+    promises.push(
+      new Promise((resolve, reject) => {
+        Room.findOne()
+          .where({ _id: single })
+          .then((result) => {
+            resolve(single);
+            newRooms = [
+              ...newRooms,
+              {
+                roomId: result._id,
+                roomOwner: result.roomOwner,
+                roomOwner: result.roomOwner,
+                roomType: result.roomType,
+                roomAddress: result.roomAddress,
+                city: result.city,
+                town: result.town,
+                friendlyWith: result.friendlyWith,
+              },
+            ];
+          });
       })
-    }))
-  })
+    );
+  });
 
-  await Promise.all(promises)
-  return newRooms
-}
+  await Promise.all(promises);
+  return newRooms;
+};
 
 const getMessageInfo = async (messages) => {
   let newMessages = {};
-  let promises = []
+  let promises = [];
   Object.keys(messages).map(async (single) => {
-    promises.push(new Promise((resolve, reject) => {
-      User.findOne()
-      .where({ _id: single })
-      .then((result) => {
-        resolve(single)
-        newMessages = {
-          ...newMessages,
-          [single]: {
-            discussion: messages[single],
-            user: {
-              name: result.name,
-              surname: result.surname,
-              photo: result.photo,
-              id: result.id,
-              room: {
-                roomId: result.roomId.roomId,
-                roomType: result.roomId.roomType,
-                city: result.roomId.city,
-                town: result.roomId.town,
-                roomPhotos: result.roomId.roomPhotos,
-                friendlyWith: result.roomId.friendlyWith,
-              }
-            },
-          },
-        };
+    promises.push(
+      new Promise((resolve, reject) => {
+        User.findOne()
+          .where({ _id: single })
+          .then((result) => {
+            resolve(single);
+            newMessages = {
+              ...newMessages,
+              [single]: {
+                discussion: messages[single],
+                user: {
+                  name: result.name,
+                  surname: result.surname,
+                  photo: result.photo,
+                  id: result.id,
+                  room: {
+                    roomId: result.roomId.roomId,
+                    roomType: result.roomId.roomType,
+                    city: result.roomId.city,
+                    town: result.roomId.town,
+                    roomPhotos: result.roomId.roomPhotos,
+                    friendlyWith: result.roomId.friendlyWith,
+                  },
+                },
+              },
+            };
+          });
       })
-    }))
+    );
   });
-  
-  await Promise.all(promises)
-  return newMessages
+
+  await Promise.all(promises);
+  return newMessages;
 };
 
 exports.getUserData = async (updates) => {
@@ -168,7 +174,11 @@ exports.getUserData = async (updates) => {
     town: updates.town,
     photo: updates.photo,
     // roomId: updates.roomId,
-    roomId: {...updates.roomId, wholikesme: await getUserInfo(updates.roomId.wholikesme)},
+    roomId: {
+      ...updates.roomId,
+      wholikesme: await getUserInfo(updates.roomId.wholikesme),
+      ilike: await getUserInfo(updates.roomId.ilike),
+    },
     wholikesme: await getUserInfo(updates.wholikesme),
     ilike: await getRoomInfo(updates.ilike),
     matches: await getUserInfo(updates.matches),
