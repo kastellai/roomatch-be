@@ -129,7 +129,21 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
       let wholikesme = result.wholikesme;
       wholikesme.push(req.body.userId);
 
-      
+      await Room.updateOne(
+        { _id: roomId },
+        { $set: { wholikesme: wholikesme } }
+      );
+
+      await User.findById({ _id: req.body.userId })
+      .then(async (result) => {
+        let ilike = result.ilike;
+        ilike.push(roomId)
+        
+        await User.updateOne(
+          { _id: req.body.userId },
+          { $set: { ilike: ilike } }
+        );
+      })
       // await Room.updateOne(
       //   { _id: roomId },
       //   { $set: { wholikesme: wholikesme } }
@@ -152,8 +166,9 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
       //     res.status(200).json(await getUserData(userUpdated))
       //   );
       // });
-      await Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } });
-      await User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } });
+
+      // await Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } });
+      // await User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } });
 
       // update room preview in user record
       await Room.findById({ _id: roomId })
@@ -182,7 +197,7 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId })
-    .then(result => {
+    .then(async (result) => {
       let wholikesme = result.wholikesme;
       wholikesme = wholikesme.filter(id => id !== req.body.userId)
 
@@ -200,6 +215,22 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
       //   { _id: req.body.userId },
       //   { $set: { ilike: ilike } }
       // );
+
+      await Room.updateOne(
+        { _id: roomId },
+        { $set: { wholikesme: wholikesme } }
+      );
+
+      await User.findById({ _id: req.body.userId })
+      .then(async (result) => {
+        let ilike = result.ilike;
+        ilike = ilike.filter((id) => id !== roomId)
+        
+        await User.updateOne(
+          { _id: req.body.userId },
+          { $set: { ilike: ilike } }
+        );
+      })
 
       // Room.findById({ _id: roomId }).then(async (result) => {
       //   await addRoomToUser(result.roomOwner, updateRoomPreview(result));
