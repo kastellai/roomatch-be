@@ -198,8 +198,7 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
 
   Room.findById({ _id: roomId })
     .then(async (result) => {
-      let wholikesme = result.wholikesme;
-      wholikesme = wholikesme.filter(id => id !== req.body.userId)
+      let wholikesme = result.wholikesme.filter((id) => id !== req.body.userId)
 
       // await Room.updateOne(
       //   { _id: roomId },
@@ -223,8 +222,7 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
 
       await User.findById({ _id: req.body.userId })
       .then(async (result) => {
-        let ilike = result.ilike;
-        ilike = ilike.filter((id) => id !== roomId)
+        let ilike = result.ilike.filter((id) => id !== roomId)
         
         await User.updateOne(
           { _id: req.body.userId },
