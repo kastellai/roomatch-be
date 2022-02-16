@@ -1,23 +1,28 @@
 const express = require("express");
 const router = express.Router();
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
 
-const Room = require('../models/room')
-const User = require('../models/users')
-const { addRoomToUser, updateRoomPreview, usersInterestedInRoom, checkMatch, getUserData } = require('../routes/mixutils')
-
+const Room = require("../models/room");
+const User = require("../models/users");
+const {
+  addRoomToUser,
+  updateRoomPreview,
+  usersInterestedInRoom,
+  checkMatch,
+  getUserData,
+} = require("../routes/mixutils");
 
 router.get("/rooms", async (req, res) => {
   const query = req.query;
   Room.find(query)
-    .then(docs => {
+    .then((docs) => {
       res.status(200).json(docs);
     })
-    .catch(error => {
+    .catch((error) => {
       res.status(500).json({
-        message: error
+        message: error,
       });
     });
 });
@@ -45,42 +50,37 @@ router.post("/rooms", async (req, res) => {
     },
     // ilike: [mongoose.Schema.Types.ObjectId],
     // wholikesme: [mongoose.Schema.Types.ObjectId],
-  })
+  });
 
-  room.save()
-    .then(
-      result => {
-        addRoomToUser(req.body.roomOwner, updateRoomPreview(result));
-        res.status(201).json(
-          {
-            message: "record successfully created",
-            createdUser: result
-          }
-        );
-      })
+  room
+    .save()
+    .then((result) => {
+      addRoomToUser(req.body.roomOwner, updateRoomPreview(result));
+      res.status(201).json({
+        message: "record successfully created",
+        createdUser: result,
+      });
+    })
     .catch((error) => {
       res.status(500).json({
-        error: error
+        error: error,
       });
-    }
-    )
+    });
 });
-
 
 router.get("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId })
-    .then(result => {
+    .then((result) => {
       res.status(200).json(result);
     })
-    .catch(error => {
+    .catch((error) => {
       res.status(500).json({
-        message: error
+        message: error,
       });
     });
 });
-
 
 router.patch("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
@@ -92,28 +92,26 @@ router.patch("/rooms/:id", async (req, res) => {
   // {"propName": "name", "value": "new_value"}
 
   Room.updateOne({ _id: roomId }, { $set: updateOps })
-    .then(_ => {
+    .then((_) => {
       // update room preview in user record
-      Room.findById({ _id: roomId })
-        .then(result => {
-          addRoomToUser(result.roomOwner, updateRoomPreview(result));
-          res.status(200).json(result);
-        })
+      Room.findById({ _id: roomId }).then((result) => {
+        addRoomToUser(result.roomOwner, updateRoomPreview(result));
+        res.status(200).json(result);
+      });
     })
-    .catch(error => {
+    .catch((error) => {
       res.status(500).json({
-        message: error
+        message: error,
       });
     });
 });
-
 
 router.delete("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.deleteOne({ _id: roomId })
-    .then(result => res.status(200).json(result))
-    .catch(error => res.status(500).json({ message: error }));
+    .then((result) => res.status(200).json(result))
+    .catch((error) => res.status(500).json({ message: error }));
 });
 
 /**
@@ -134,16 +132,15 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
         { $set: { wholikesme: wholikesme } }
       );
 
-      await User.findById({ _id: req.body.userId })
-      .then(async (result) => {
+      await User.findById({ _id: req.body.userId }).then(async (result) => {
         let ilike = result.ilike;
-        ilike.push(roomId)
-        
+        ilike.push(roomId);
+
         await User.updateOne(
           { _id: req.body.userId },
           { $set: { ilike: ilike } }
         );
-      })
+      });
       // await Room.updateOne(
       //   { _id: roomId },
       //   { $set: { wholikesme: wholikesme } }
@@ -171,17 +168,18 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
       // await User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } });
 
       // update room preview in user record
-      await Room.findById({ _id: roomId })
-        .then(result => {
-          addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        })
-      User.findById({ _id: req.body.userId }).then(async (userUpdated) => res.status(200).json(await getUserData(userUpdated)));
-    
+
+      await Room.findById({ _id: roomId }).then((result) => {
+        addRoomToUser(result.roomOwner, updateRoomPreview(result));
+      });
+      await User.findById({ _id: req.body.userId }).then(async (userUpdated) =>
+        res.status(200).json(await getUserData(userUpdated))
+      );
     })
 
-    .catch(error => {
+    .catch((error) => {
       res.status(500).json({
-        message: error
+        message: error,
       });
     });
 
@@ -198,8 +196,21 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
 
   Room.findById({ _id: roomId })
     .then(async (result) => {
-      let wholikesme = result.wholikesme.filter((id) => id !== req.body.userId)
+      let wholikesme = result.wholikesme.filter((id) => id !== req.body.userId);
 
+      await Room.updateOne(
+        { _id: roomId },
+        { $set: { wholikesme: wholikesme } }
+      );
+
+      await User.findById({ _id: req.body.userId }).then(async (result) => {
+        let ilike = result.ilike.filter((id) => id !== roomId);
+
+        await User.updateOne(
+          { _id: req.body.userId },
+          { $set: { ilike: ilike } }
+        );
+      });
       // await Room.updateOne(
       //   { _id: roomId },
       //   { $set: { wholikesme: wholikesme } }
@@ -215,21 +226,6 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
       //   { $set: { ilike: ilike } }
       // );
 
-      await Room.updateOne(
-        { _id: roomId },
-        { $set: { wholikesme: wholikesme } }
-      );
-
-      await User.findById({ _id: req.body.userId })
-      .then(async (result) => {
-        let ilike = result.ilike.filter((id) => id !== roomId)
-        
-        await User.updateOne(
-          { _id: req.body.userId },
-          { $set: { ilike: ilike } }
-        );
-      })
-
       // Room.findById({ _id: roomId }).then(async (result) => {
       //   await addRoomToUser(result.roomOwner, updateRoomPreview(result));
 
@@ -237,52 +233,53 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
       //     res.status(200).json(await getUserData(userUpdated))
       //   );
       // });
+      await Room.findById({ _id: roomId }).then((result) => {
+        addRoomToUser(result.roomOwner, updateRoomPreview(result));
+      });
 
-      Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } })
-        .then(_ => {
-          User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } })
-            .then(_ => {
-              // update room preview in user record
-              Room.findById({ _id: roomId })
-                .then(result => {
-                  addRoomToUser(result.roomOwner, updateRoomPreview(result));
-                })
+      await User.findById({ _id: req.body.userId }).then(async (userUpdated) =>
+        res.status(200).json(await getUserData(userUpdated))
+      );
 
-              User.findById({ _id: req.body.userId }).then(async (userUpdated) => res.status(200).json(await getUserData(userUpdated))
-              )
-            });
-        });
+      // Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } })
+      //   .then(_ => {
+      //     User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } })
+      //       .then(_ => {
+      //         // update room preview in user record
+
+      //       });
+      //   });
     })
-    .catch(error => {
+    .catch((error) => {
       res.status(500).json({
-        message: error
+        message: error,
       });
     });
 });
 
 /**
  * Returns the list of users who have added the like the specific room
- * Same result of "/users/:id/wholikesmyroom" 
+ * Same result of "/users/:id/wholikesmyroom"
  * TODO - evaluate it
  */
 router.get("/rooms/:id/getlikes", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId })
-    .then(result => {
-      User.find().where({ '_id': { $in: result.wholikesme } })
-        .then(users => {
+    .then((result) => {
+      User.find()
+        .where({ _id: { $in: result.wholikesme } })
+        .then((users) => {
           const usersList = [];
-          users.forEach(user => usersList.push(usersInterestedInRoom(user)))
-          res.status(200).json(usersList)
-        })
+          users.forEach((user) => usersList.push(usersInterestedInRoom(user)));
+          res.status(200).json(usersList);
+        });
     })
-    .catch(error => {
+    .catch((error) => {
       res.status(500).json({
-        message: error
+        message: error,
       });
     });
 });
-
 
 module.exports = router;
