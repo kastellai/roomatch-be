@@ -302,7 +302,7 @@ router.get("/users/:id/wholikesmyroom", async (req, res) => {
  **/
 router.patch("/users/:id/addlike", async (req, res) => {
   const userId = req.params["id"];
-
+ 
   await User.findById({ _id: userId })
     .then(async (result) => {
       let wholikesme = result.wholikesme;
@@ -328,11 +328,11 @@ router.patch("/users/:id/addlike", async (req, res) => {
       // update room preview in user record
       await Room.findById({ _id: req.body.roomId }).then((result) => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
+        User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
+            res.status(200).json(await getUserData(userUpdated))
+        );
       });
 
-      await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
-          res.status(200).json(await getUserData(userUpdated))
-      );
 
       // Room.findById({ _id: req.body.roomId }).then(async (result) => {
       //   await addRoomToUser(result.roomOwner, updateRoomPreview(result));
@@ -385,11 +385,10 @@ router.patch("/users/:id/removelike", async (req, res) => {
       // update room preview in user record
       await Room.findById({ _id: req.body.roomId }).then((result) => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
-      });
-
-      await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
-          res.status(200).json(await getUserData(userUpdated))
+        User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
+            res.status(200).json(await getUserData(userUpdated))
         );
+      });
     })
     .catch((error) => {
       res.status(500).json({
