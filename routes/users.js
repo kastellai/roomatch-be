@@ -326,9 +326,9 @@ router.patch("/users/:id/addlike", async (req, res) => {
 
 
       // update room preview in user record
-      await Room.findById({ _id: req.body.roomId }).then((result) => {
-        addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
+      await Room.findById({ _id: req.body.roomId }).then(async (result) => {
+        await addRoomToUser(result.roomOwner, updateRoomPreview(result));
+        await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
             res.status(200).json(await getUserData(userUpdated))
         );
       });
@@ -383,9 +383,9 @@ router.patch("/users/:id/removelike", async (req, res) => {
       // );
 
       // update room preview in user record
-      await Room.findById({ _id: req.body.roomId }).then((result) => {
-        addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
+      await Room.findById({ _id: req.body.roomId }).then(async (result) => {
+        await addRoomToUser(result.roomOwner, updateRoomPreview(result));
+        await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
             res.status(200).json(await getUserData(userUpdated))
         );
       });
