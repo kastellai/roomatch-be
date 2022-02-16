@@ -100,6 +100,8 @@ const getRoomInfo = async (roomsId) => {
         newRooms = [
           ...newRooms, 
           {
+            roomId: result._id,
+            roomOwner: result.roomOwner,
             roomOwner: result.roomOwner,
             roomType: result.roomType,
             roomAddress: result.roomAddress,
@@ -140,6 +142,7 @@ const getMessageInfo = async (messages) => {
                 city: result.roomId.city,
                 town: result.roomId.town,
                 roomPhotos: result.roomId.roomPhotos,
+                friendlyWith: result.roomId.friendlyWith,
               }
             },
           },
