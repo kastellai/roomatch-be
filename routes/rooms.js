@@ -6,7 +6,7 @@ const { ObjectId } = require("mongodb");
 
 const Room = require('../models/room')
 const User = require('../models/users')
-const { addRoomToUser, updateRoomPreview, usersInterestedInRoom, checkMatch } = require('../routes/mixutils')
+const { addRoomToUser, updateRoomPreview, usersInterestedInRoom, checkMatch, getUserData } = require('../routes/mixutils')
 
 
 router.get("/rooms", async (req, res) => {
@@ -137,7 +137,7 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
         .then(result => {
           addRoomToUser(result.roomOwner, updateRoomPreview(result));
         })
-      User.findById({ _id: req.body.userId }).then(userUpdated => res.status(200).json(userUpdated));
+      User.findById({ _id: req.body.userId }).then(async (userUpdated) => res.status(200).json(await getUserData(userUpdated)));
     })
 
     .catch(error => {
@@ -172,7 +172,7 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
                   addRoomToUser(result.roomOwner, updateRoomPreview(result));
                 })
 
-              User.findById({ _id: req.body.userId }).then(userUpdated => res.status(200).json(userUpdated)
+              User.findById({ _id: req.body.userId }).then(async (userUpdated) => res.status(200).json(await getUserData(userUpdated))
               )
             });
         });

@@ -117,7 +117,7 @@ router.get("/users/:id", async (req, res) => {
         .then((users) => {
           const usersList = [];
           users.forEach((user) => usersList.push(previewWhoLikesMe(user)));
-          res.status(200).json(getUserData(result, usersList));
+          res.status(200).json(getUserData(result));
         });
     })
     .catch((error) => {
@@ -199,10 +199,10 @@ router.post("/login", async (req, res) => {
         await setTokenUser(result._id.toString(), token);
         User.find()
           .where({ _id: { $in: result.wholikesme } })
-          .then((users) => {
+          .then(async (users) => {
             const usersList = [];
             users.forEach((user) => usersList.push(previewWhoLikesMe(user)));
-            res.status(200).json(getUserData(result, usersList));
+            res.status(200).json(await getUserData(result, usersList));
           });
       } else {
         res.status(400).json({ message: "wrong password" });
@@ -327,8 +327,8 @@ router.patch("/users/:id/addlike", async (req, res) => {
       Room.findById({ _id: req.body.roomId }).then(async (result) => {
         await addRoomToUser(result.roomOwner, updateRoomPreview(result));
 
-        User.findById({ _id: result.roomOwner }).then((userUpdated) =>
-          res.status(200).json(userUpdated)
+        User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
+          res.status(200).json(await getUserData(userUpdated))
         );
       });
     })
@@ -371,8 +371,8 @@ router.patch("/users/:id/removelike", async (req, res) => {
       // update room preview in user record
       Room.findById({ _id: req.body.roomId }).then((result) => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        User.findById({ _id: result.roomOwner }).then((userUpdated) =>
-          res.status(200).json(userUpdated)
+        User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
+          res.status(200).json(await getUserData(userUpdated))
         );
       });
     })
@@ -431,8 +431,9 @@ router.post("/message", async (req, res) => {
 
 
     User.findById({ _id: req.body.myId })
-    .then(result => {
-      res.status(200).json(getUserData(result));
+    .then(async (result) => {
+      
+      res.status(200).json(await getUserData(result));
     })
     .catch((error) => {
       res.status(500).json({
