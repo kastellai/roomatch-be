@@ -183,6 +183,7 @@ exports.getUserData = async (updates) => {
     ilike: updates.roomId.roomId ? await getUserInfo(updates.ilike) : await getRoomInfo(updates.ilike),
     matches: updates.roomId.roomId ? await getUserInfo(updates.matches) : await getRoomInfo(updates.matches),
     messages: await getMessageInfo(updates.messages),
+    token: updates.token
   };
 };
 

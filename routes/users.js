@@ -462,12 +462,7 @@ router.post("/update", async (req, res) => {
         User.updateOne({ _id: req.body.myId }, { $set: { lastLogin: Date.now() } })
           .then((result) => result)
           .catch((error) => new error());
-        // User.updateOne({ _id: req.body.myId },{$set: { lastLogin: Date.now() }})
         res.status(200).json(await getUserData(result));
-        // res.status(200).json({
-        //   message: 'ok',
-        //   min: diff
-        // });
       }
       else {
         res.status(401).json({
