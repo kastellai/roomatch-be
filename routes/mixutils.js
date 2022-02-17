@@ -71,6 +71,7 @@ const getUserInfo = async (usersId) => {
                 city: result.city,
                 town: result.town,
                 id: result.id,
+                iam: result.iam,
                 room: {
                   roomId: result.roomId.roomId,
                   roomType: result.roomId.roomType,
