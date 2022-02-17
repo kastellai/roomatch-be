@@ -33,12 +33,22 @@ router.post("/rooms", async (req, res) => {
     roomOwner: ObjectId(req.body.roomOwner),
     roomType: req.body.roomType,
     roomAddress: req.body.roomAddress,
+    rentPrice: req.body.rentPrice,
     city: req.body.city,
     town: req.body.town,
     roomPhotos: req.body.roomPhotos,
     roommates: {
       females: req.body.roommates.females,
       males: req.body.roommates.males,
+      others: req.body.roommates.others,
+    },
+    aboutFlat: {
+      bedrooms: req.body.aboutFlat.bedrooms,
+      bathrooms: req.body.aboutFlat.bathrooms,
+      kitchen: req.body.aboutFlat.kitchen,
+      airCond: req.body.aboutFlat.airCond,
+      billsIncl: req.body.aboutFlat.billsIncl,
+      wifi: req.body.aboutFlat.wifi,
     },
     friendlyWith: {
       lgbtq: req.body.friendlyWith.lgbtq,
@@ -173,6 +183,7 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
       await Room.findById({ _id: roomId }).then((result) => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
       });
+      await checkMatch(req.body.userId, roomId);
       await User.findById({ _id: req.body.userId }).then(async (userUpdated) =>
         res.status(200).json(await getUserData(userUpdated))
       );
@@ -184,7 +195,6 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
       });
     });
 
-  await checkMatch(req.body.userId, roomId);
 });
 
 /**

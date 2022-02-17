@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 const roomSchema = new Schema({
   _id: mongoose.Schema.Types.ObjectId,
   roomOwner: mongoose.Schema.Types.ObjectId,
-  roomType: { type: String, required: true, enum: ["Private", "Shared"] },
-  rentPrice: { type: String, required: true},
+  roomType: { type: String, required: true, enum: ["Single", "Shared"] },
+  rentPrice: { type: String, required: true },
   roomAddress: { type: String, required: true },
   city: { type: String, required: true },
   town: { type: String, required: true },
