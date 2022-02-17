@@ -152,33 +152,6 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
           { $set: { ilike: ilike } }
         );
       });
-      // await Room.updateOne(
-      //   { _id: roomId },
-      //   { $set: { wholikesme: wholikesme } }
-      // );
-
-      // await User.findById({ _id: req.body.userId })
-      //   .then(async (result) => {
-      //     let ilike = result.ilike;
-      //     ilike.push(req.body.ilike);
-
-      // await User.updateOne(
-      //   { _id: req.body.userId },
-      //   { $set: { ilike: ilike } }
-      // );
-
-      // Room.findById({ _id: roomId }).then(async (result) => {
-      //   await addRoomToUser(result.roomOwner, updateRoomPreview(result));
-
-      //   User.findById({ _id: req.body.userId }).then(async (userUpdated) =>
-      //     res.status(200).json(await getUserData(userUpdated))
-      //   );
-      // });
-
-      // await Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } });
-      // await User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } });
-
-      // update room preview in user record
 
       await Room.findById({ _id: roomId }).then((result) => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
@@ -223,28 +196,7 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
           { $set: { ilike: ilike } }
         );
       });
-      // await Room.updateOne(
-      //   { _id: roomId },
-      //   { $set: { wholikesme: wholikesme } }
-      // );
 
-      // await User.findById({ _id: req.body.userId })
-      //   .then(async (result) => {
-      //     let ilike = result.ilike;
-      //     ilike = ilike.filter((id) => id !== req.body.ilike);
-
-      // await User.updateOne(
-      //   { _id: req.body.userId },
-      //   { $set: { ilike: ilike } }
-      // );
-
-      // Room.findById({ _id: roomId }).then(async (result) => {
-      //   await addRoomToUser(result.roomOwner, updateRoomPreview(result));
-
-      //   User.findById({ _id: req.body.userId }).then(async (userUpdated) =>
-      //     res.status(200).json(await getUserData(userUpdated))
-      //   );
-      // });
       await Room.findById({ _id: roomId }).then((result) => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
       });
@@ -253,14 +205,7 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
         res.status(200).json(await getUserData(userUpdated))
       );
 
-      // Room.updateOne({ _id: roomId }, { $set: { wholikesme: wholikesme } })
-      //   .then(_ => {
-      //     User.updateOne({ _id: req.body.userId }, { $set: { ilike: req.body.ilike } })
-      //       .then(_ => {
-      //         // update room preview in user record
 
-      //       });
-      //   });
     })
     .catch((error) => {
       res.status(500).json({

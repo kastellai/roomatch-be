@@ -173,7 +173,7 @@ router.delete("/users/:id", async (req, res) => {
  * @param token - is the generated token to set for the user
  */
 const setTokenUser = async (userId, token) => {
-  User.updateOne({ _id: userId }, { $set: { token: token } })
+  User.updateOne({ _id: userId }, { $set: { token: token }, $set: { lastLogin: Date.now() } })
     .then((result) => result)
     .catch((error) => new error());
 };
@@ -190,22 +190,24 @@ router.post("/login", async (req, res) => {
     .select("+password")
     .then(async (result) => {
       result
-        ? (logged = await bcrypt.compare(req.body.password, result.password))
-        : res.status(404).json({
-            message: "record not found",
-          });
+        && (logged = await bcrypt.compare(req.body.password, result.password))
+        // : res.status(404).json({
+        //     message: "record not found",
+        //   });
       if (logged) {
         const token = tokenGenerator(32, "#aA");
         await setTokenUser(result._id.toString(), token);
-        User.find()
-          .where({ _id: { $in: result.wholikesme } })
-          .then(async (users) => {
-            const usersList = [];
-            users.forEach((user) => usersList.push(previewWhoLikesMe(user)));
-            res.status(200).json(await getUserData(result, usersList));
-          });
+        res.status(200).json(await getUserData(result));
+        // console.log(await getUserData(result))
+        // User.find()
+        //   .where({ _id: { $in: result.wholikesme } })
+        //   .then(async (users) => {
+        //     const usersList = [];
+        //     users.forEach((user) => usersList.push(previewWhoLikesMe(user)));
+        //     res.status(200).json(await getUserData(result, usersList));
+        //   });
       } else {
-        res.status(400).json({ message: "wrong password" });
+        res.status(400).json({ message: "wrong user or password" });
       }
     })
     .catch((error) => {
@@ -334,14 +336,6 @@ router.patch("/users/:id/addlike", async (req, res) => {
         );
       });
 
-
-      // Room.findById({ _id: req.body.roomId }).then(async (result) => {
-      //   await addRoomToUser(result.roomOwner, updateRoomPreview(result));
-
-      //   User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
-      //     res.status(200).json(await getUserData(userUpdated))
-      //   );
-      // });
     })
     .catch((error) => {
       res.status(500).json({
@@ -376,11 +370,6 @@ router.patch("/users/:id/removelike", async (req, res) => {
           { $set: { ilike: ilike } }
         );
       })
-
-      // await Room.updateOne(
-      //   { _id: req.body.roomId },
-      //   { $set: { ilike: req.body.roomilike } }
-      // );
 
       // update room preview in user record
       await Room.findById({ _id: req.body.roomId }).then(async (result) => {
@@ -454,6 +443,45 @@ router.post("/message", async (req, res) => {
         message: error,
       });
     });
+});
+
+
+
+router.post("/update", async (req, res) => {
+
+  // payload:
+  // {
+  //   myId: 'vmvcm',
+  //   token: 'vmvmvmv'
+  // }
+ 
+  await User.findById({ _id: req.body.myId })
+    .then(async (result) => {
+      const diff = (Date.now() - result.lastLogin) / 60000
+      if (result.token === req.body.token && diff < 30) {
+        User.updateOne({ _id: req.body.myId }, { $set: { lastLogin: Date.now() } })
+          .then((result) => result)
+          .catch((error) => new error());
+        // User.updateOne({ _id: req.body.myId },{$set: { lastLogin: Date.now() }})
+        res.status(200).json(await getUserData(result));
+        // res.status(200).json({
+        //   message: 'ok',
+        //   min: diff
+        // });
+      }
+      else {
+        res.status(401).json({
+          message: 'Unauthorized'
+        });
+      }
+      
+    }
+    )
+    .catch((error) => {
+      res.status(500).json({
+        message: error
+      })
+    })
 });
 
 module.exports = router;

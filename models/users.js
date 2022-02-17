@@ -44,7 +44,8 @@ const userSchema = mongoose.Schema({
     matches: [String],
   },
   messages: {type: Object},
-  token: { type: String }
+  token: { type: String },
+  lastLogin: { type: Number }
 });
 
 module.exports = mongoose.model('User', userSchema);
