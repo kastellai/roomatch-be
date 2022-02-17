@@ -9,7 +9,7 @@ const roomSchema = new Schema({
   roomAddress: { type: String, required: true },
   city: { type: String, required: true },
   town: { type: String, required: true },
-  roomPhotos: { type: [String], required: true, length: 4 },
+  roomPhotos: { type: [String], required: true },
   aboutFlat: {
     bedrooms: String,
     bathrooms: String,
