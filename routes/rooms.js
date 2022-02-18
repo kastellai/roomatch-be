@@ -69,6 +69,7 @@ router.post("/rooms", async (req, res) => {
     .save()
     .then(async (result) => {
       await addRoomToUser(req.body.roomOwner, updateRoomPreview(result));
+      // RIMUOVI LIKES DA WHOLIKESME
       await resetUser(req.body.roomOwner)
       await User.findById({ _id: req.body.roomOwner }).then(async (userUpdated) =>
             res.status(200).json(await getUserData(userUpdated))
@@ -129,8 +130,10 @@ router.delete("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId }).then(async (result) => {
-    await removeRoomToUser(result.roomOwner, resetRoomPreview(result));
-    await resetUser(result.roomOwner)
+    await User.updateOne({ _id: result.roomOwner }, { $set: { roomId: resetRoomPreview() }})
+    await User.updateOne({ _id: result.roomOwner }, { $set: { ilike: [] }, $set: { matches: [] }, $set: { wholikesme: [] }, $set: { newLike: [] }, $set: { newMatch: [] } })
+    
+  //  await resetUser(result.roomOwner)
     await Room.deleteOne({ _id: roomId })
       .then(async (data) => {
         await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>

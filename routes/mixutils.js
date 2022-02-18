@@ -15,10 +15,11 @@ exports.addRoomToUser = async (userId, roomId) => {
     });
 };
 
-exports.removeRoomToUser = async (userId, roomId) => {
-  await User.updateOne({ _id: userId }, { $set: { roomId: roomId }})
+exports.removeRoomToUser = async (userId) => {
+  await User.updateOne({ _id: userId }, { $set: { roomId: resetRoomPreview() }})
     .then((result) => {
-      res.status(200).json(result);
+      console.log(result)
+      // res.status(200).json(result);
     })
     .catch((error) => {
       new Error(error);
@@ -50,17 +51,13 @@ exports.updateRoomPreview = (updates) => {
   };
 };
 
-exports.resetRoomPreview = (updates) => {
+exports.resetRoomPreview = () => {
   return {
     roomId: '',
     roomType: '',
     city: '',
     town: '',
-    roomPhotos: [],
-    friendlyWith: {},
-    wholikesme: [],
-    ilike: [],
-    matches: [],
+    roomPhotos: '',
   };
 };
 
@@ -210,7 +207,6 @@ exports.getUserData = async (updates) => {
     city: updates.city,
     town: updates.town,
     photo: updates.photo,
-    aboutFlat: updates.aboutFlat,
     roomId: {
       ...updates.roomId,
       wholikesme: await getUserInfo(updates.roomId.wholikesme),
