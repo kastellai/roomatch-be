@@ -225,6 +225,8 @@ exports.getUserData = async (updates) => {
 
 const updatedUserMatches = async function (userIlike, roomIlike) {
   // console.log(`MATCH! User likes the room `)
+  
+
   const updatedUserIlike = userIlike.ilike.filter(
     (room) => room !== roomIlike._id.toString()
   );
@@ -232,6 +234,28 @@ const updatedUserMatches = async function (userIlike, roomIlike) {
     (room) => room !== roomIlike._id.toString()
   );
   const updatedUserMatches = [...userIlike.matches, roomIlike._id.toString()];
+
+  
+  //////
+  const updatedUserNewMatches = [...userIlike.newMatch, roomIlike._id.toString()];
+
+  const updatedUserNewlike = userIlike.newLike.filter(
+    (room) => room !== roomIlike._id.toString()
+  );
+  
+  const updatedRoomNewlike = roomIlike.newLike.filter(
+    (user) => user !== userIlike._id.toString()
+  );
+
+  //////
+
+  let updatedRoomNewMatches;
+
+  await User.findById({ _id: roomIlike.roomOwner })
+    .then((result) => 
+       updatedRoomNewMatches = [...result.newMatch, userIlike._id.toString()]
+    )
+        
 
   const updatedRooomIlike = roomIlike.ilike.filter(
     (user) => user !== userIlike._id.toString()
@@ -257,6 +281,8 @@ const updatedUserMatches = async function (userIlike, roomIlike) {
       $set: {
         "roomId.ilike": updatedRooomIlike,
         "roomId.wholikesme": updatedRooomWholikesme,
+        "newLike": updatedRoomNewlike,
+        "newMatch": updatedRoomNewMatches,
         "roomId.matches": updatedRooomMatches,
       },
     }
@@ -268,6 +294,8 @@ const updatedUserMatches = async function (userIlike, roomIlike) {
         ilike: updatedUserIlike,
         wholikesme: updatedUserWholikesme,
         matches: updatedUserMatches,
+        newLike: updatedUserNewlike,
+        newMatch: updatedUserNewMatches
       },
     }
   );
