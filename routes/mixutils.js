@@ -214,6 +214,7 @@ exports.getUserData = async (updates) => {
       ...updates.roomId,
       wholikesme: await getUserInfo(updates.roomId.wholikesme),
       ilike: await getUserInfo(updates.roomId.ilike),
+      matches: await getUserInfo(updates.roomId.matches),
     },
     wholikesme: updates.roomId.roomId ? await getUserInfo(updates.wholikesme) : await getRoomInfo(updates.wholikesme),
     ilike: updates.roomId.roomId ? await getUserInfo(updates.ilike) : await getRoomInfo(updates.ilike),
