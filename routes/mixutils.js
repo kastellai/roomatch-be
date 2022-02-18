@@ -225,81 +225,134 @@ exports.getUserData = async (updates) => {
 
 const updatedUserMatches = async function (userIlike, roomIlike) {
   // console.log(`MATCH! User likes the room `)
-  
-
-  const updatedUserIlike = userIlike.ilike.filter(
-    (room) => room !== roomIlike._id.toString()
-  );
-  const updatedUserWholikesme = userIlike.wholikesme.filter(
-    (room) => room !== roomIlike._id.toString()
-  );
+  const updatedUserIlike = userIlike.ilike.filter(room => room !== roomIlike._id.toString());
+  const updatedUserWholikesme = userIlike.wholikesme.filter(room => room !== roomIlike._id.toString());
   const updatedUserMatches = [...userIlike.matches, roomIlike._id.toString()];
 
-  
-  //////
   const updatedUserNewMatches = [...userIlike.newMatch, roomIlike._id.toString()];
+  const updatedUserNewLike = userIlike.newLike.filter(room => room !== roomIlike._id.toString());
 
-  const updatedUserNewlike = userIlike.newLike.filter(
-    (room) => room !== roomIlike._id.toString()
-  );
-  
-  const updatedRoomNewlike = roomIlike.newLike.filter(
-    (user) => user !== userIlike._id.toString()
-  );
-
-  //////
-
-  let updatedRoomNewMatches;
-
-  await User.findById({ _id: roomIlike.roomOwner })
-    .then((result) => 
-       updatedRoomNewMatches = [...result.newMatch, userIlike._id.toString()]
-    )
-        
-
-  const updatedRooomIlike = roomIlike.ilike.filter(
-    (user) => user !== userIlike._id.toString()
-  );
-  const updatedRooomWholikesme = roomIlike.wholikesme.filter(
-    (user) => user !== userIlike._id.toString()
-  );
+  const updatedRooomIlike = roomIlike.ilike.filter(user => user !== userIlike._id.toString());
+  const updatedRooomWholikesme = roomIlike.wholikesme.filter(user => user !== userIlike._id.toString());
   const updatedRooomMatches = [...roomIlike.matches, userIlike._id.toString()];
 
+
+  await User.findById({ _id: roomIlike.roomOwner })
+      .then(async (result) => {
+        let newNewMatch = [...result.newMatch, userIlike._id.toString()]
+        let newNewLike = result.newLike.filter((id) => id !== userIlike._id.toString());
+        await User.updateOne(
+          { _id: roomIlike.roomOwner }, { $set: { 
+            "roomId.ilike": updatedRooomIlike, 
+            "roomId.wholikesme": updatedRooomWholikesme, 
+            "roomId.matches": updatedRooomMatches,
+            "newLike": newNewLike,
+            "newMatch": newNewMatch 
+          } })
+      })
+
   await Room.updateOne(
-    { _id: roomIlike._id.toString() },
-    {
-      $set: {
-        ilike: updatedRooomIlike,
-        wholikesme: updatedRooomWholikesme,
-        matches: updatedRooomMatches,
-      },
-    }
-  );
+    { _id: roomIlike._id.toString() }, { $set: { 
+      "ilike": updatedRooomIlike, 
+      "wholikesme": updatedRooomWholikesme, 
+      "matches": updatedRooomMatches 
+    } });
+
+  // await User.updateOne(
+  //   { _id: roomIlike.roomOwner }, { $set: { 
+  //     "roomId.ilike": updatedRooomIlike, 
+  //     "roomId.wholikesme": updatedRooomWholikesme, 
+  //     "roomId.matches": updatedRooomMatches,
+  //     "newLike": '',
+  //     "newMatch": ''  
+  //   } })
+
   await User.updateOne(
-    { _id: roomIlike.roomOwner },
-    {
-      $set: {
-        "roomId.ilike": updatedRooomIlike,
-        "roomId.wholikesme": updatedRooomWholikesme,
-        "newLike": updatedRoomNewlike,
-        "newMatch": updatedRoomNewMatches,
-        "roomId.matches": updatedRooomMatches,
-      },
-    }
-  );
-  await User.updateOne(
-    { _id: userIlike._id.toString() },
-    {
-      $set: {
-        ilike: updatedUserIlike,
-        wholikesme: updatedUserWholikesme,
-        matches: updatedUserMatches,
-        newLike: updatedUserNewlike,
-        newMatch: updatedUserNewMatches
-      },
-    }
-  );
-};
+    { _id: userIlike._id.toString() }, { $set: { 
+      "ilike": updatedUserIlike, 
+      "wholikesme": updatedUserWholikesme, 
+      "matches": updatedUserMatches,
+      "newLike": updatedUserNewLike,
+      "newMatch": updatedUserNewMatches
+    } })
+
+}
+//   // console.log(`MATCH! User likes the room `)
+//   const updatedUserIlike = userIlike.ilike.filter(
+//     (room) => room !== roomIlike._id.toString()
+//   );
+//   const updatedUserWholikesme = userIlike.wholikesme.filter(
+//     (room) => room !== roomIlike._id.toString()
+//   );
+//   const updatedUserMatches = [...userIlike.matches, roomIlike._id.toString()];
+
+  
+//   //////
+//   const updatedUserNewMatches = [...userIlike.newMatch, roomIlike._id.toString()];
+
+//   const updatedUserNewlike = userIlike.newLike.filter(
+//     (room) => room !== roomIlike._id.toString()
+//   );
+
+//   console.log(roomIlike)
+  
+//   const updatedRoomNewlike = roomIlike.newLike.filter(
+//     (user) => user !== userIlike._id.toString()
+//   );
+
+//   //////
+
+//   let updatedRoomNewMatches;
+
+//   await User.findById({ _id: roomIlike.roomOwner })
+//     .then((result) => 
+//        updatedRoomNewMatches = [...result.newMatch, userIlike._id.toString()]
+//     )
+        
+
+//   const updatedRooomIlike = roomIlike.ilike.filter(
+//     (user) => user !== userIlike._id.toString()
+//   );
+//   const updatedRooomWholikesme = roomIlike.wholikesme.filter(
+//     (user) => user !== userIlike._id.toString()
+//   );
+//   const updatedRooomMatches = [...roomIlike.matches, userIlike._id.toString()];
+
+//   await Room.updateOne(
+//     { _id: roomIlike._id.toString() },
+//     {
+//       $set: {
+//         ilike: updatedRooomIlike,
+//         wholikesme: updatedRooomWholikesme,
+//         matches: updatedRooomMatches,
+//       },
+//     }
+//   );
+//   await User.updateOne(
+//     { _id: roomIlike.roomOwner },
+//     {
+//       $set: {
+//         "roomId.ilike": updatedRooomIlike,
+//         "roomId.wholikesme": updatedRooomWholikesme,
+//         "newLike": updatedRoomNewlike,
+//         "newMatch": updatedRoomNewMatches,
+//         "roomId.matches": updatedRooomMatches,
+//       },
+//     }
+//   );
+//   await User.updateOne(
+//     { _id: userIlike._id.toString() },
+//     {
+//       $set: {
+//         ilike: updatedUserIlike,
+//         wholikesme: updatedUserWholikesme,
+//         matches: updatedUserMatches,
+//         newLike: updatedUserNewlike,
+//         newMatch: updatedUserNewMatches
+//       },
+//     }
+//   );
+// };
 
 /**
  * Checks if the match user-room exists

@@ -308,7 +308,6 @@ router.patch("/users/:id/addlike", async (req, res) => {
     .then(async (result) => {
       let wholikesme = result.wholikesme;
       wholikesme.push(req.body.roomId);
-
       let newNewLike = result.newLike;
       newNewLike.push(req.body.roomId)
 
