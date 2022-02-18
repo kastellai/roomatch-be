@@ -210,6 +210,7 @@ exports.getUserData = async (updates) => {
     city: updates.city,
     town: updates.town,
     photo: updates.photo,
+    aboutFlat: updates.aboutFlat,
     roomId: {
       ...updates.roomId,
       wholikesme: await getUserInfo(updates.roomId.wholikesme),
