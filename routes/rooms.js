@@ -12,6 +12,9 @@ const {
   usersInterestedInRoom,
   checkMatch,
   getUserData,
+  resetUser,
+  removeRoomToUser,
+  resetRoomPreview
 } = require("../routes/mixutils");
 
 router.get("/rooms", async (req, res) => {
@@ -64,12 +67,16 @@ router.post("/rooms", async (req, res) => {
 
   room
     .save()
-    .then((result) => {
-      addRoomToUser(req.body.roomOwner, updateRoomPreview(result));
-      res.status(201).json({
-        message: "record successfully created",
-        createdUser: result,
-      });
+    .then(async (result) => {
+      await addRoomToUser(req.body.roomOwner, updateRoomPreview(result));
+      await resetUser(req.body.roomOwner)
+      await User.findById({ _id: req.body.roomOwner }).then(async (userUpdated) =>
+            res.status(200).json(await getUserData(userUpdated))
+        )
+      // res.status(201).json({
+      //   message: "record successfully created",
+      //   createdUser: result,
+      // });
     })
     .catch((error) => {
       res.status(500).json({
@@ -104,9 +111,11 @@ router.patch("/rooms/:id", async (req, res) => {
   Room.updateOne({ _id: roomId }, { $set: updateOps })
     .then((_) => {
       // update room preview in user record
-      Room.findById({ _id: roomId }).then((result) => {
-        addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        res.status(200).json(result);
+      Room.findById({ _id: roomId }).then(async (result) => {
+        await addRoomToUser(result.roomOwner, updateRoomPreview(result));
+        await User.findById({ _id: roomOwner }).then(async (userUpdated) =>
+            res.status(200).json(await getUserData(userUpdated))
+        )
       });
     })
     .catch((error) => {
@@ -119,9 +128,18 @@ router.patch("/rooms/:id", async (req, res) => {
 router.delete("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
 
-  Room.deleteOne({ _id: roomId })
-    .then((result) => res.status(200).json(result))
-    .catch((error) => res.status(500).json({ message: error }));
+  Room.findById({ _id: roomId }).then(async (result) => {
+    await removeRoomToUser(result.roomOwner, resetRoomPreview(result));
+    await resetUser(result.roomOwner)
+    await Room.deleteOne({ _id: roomId })
+      .then(async (data) => {
+        await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
+          res.status(200).json(await getUserData(userUpdated))
+      )
+      })
+      .catch((error) => res.status(500).json({ message: error }));
+  });
+
 });
 
 /**

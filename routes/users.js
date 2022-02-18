@@ -73,7 +73,6 @@ router.post("/users", async (req, res) => {
       },
       wholikesme: [],
     },
-    messages: {}
   });
 
   User.find()
@@ -111,14 +110,15 @@ router.get("/users/:id", async (req, res) => {
   const user_id = req.params["id"];
 
   User.findById({ _id: user_id })
-    .then((result) => {
-      User.find()
-        .where({ _id: { $in: result.wholikesme } })
-        .then((users) => {
-          const usersList = [];
-          users.forEach((user) => usersList.push(previewWhoLikesMe(user)));
-          res.status(200).json(getUserData(result));
-        });
+    .then(async (result) => {
+      res.status(200).json(await getUserData(result));
+      // User.find()
+      //   .where({ _id: { $in: result.wholikesme } })
+      //   .then((users) => {
+      //     const usersList = [];
+      //     users.forEach((user) => usersList.push(previewWhoLikesMe(user)));
+      //     res.status(200).json(await getUserData(result));
+      //   });
     })
     .catch((error) => {
       res.status(500).json({
@@ -189,8 +189,7 @@ router.post("/login", async (req, res) => {
     .where({ email: req.body.email })
     .select("+password")
     .then(async (result) => {
-      result
-        && (logged = await bcrypt.compare(req.body.password, result.password))
+      logged = await bcrypt.compare(req.body.password, result.password)
         // : res.status(404).json({
         //     message: "record not found",
         //   });

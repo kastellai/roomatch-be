@@ -43,9 +43,13 @@ const userSchema = mongoose.Schema({
     ilike: [String],
     matches: [String],
   },
-  messages: {type: Object},
+  messages: { 
+    message: [Array], 
+  },
   token: { type: String },
-  lastLogin: { type: Number }
+  lastLogin: { type: Number },
+  newLike: [String],
+  newMatch: [String]
 });
 
 module.exports = mongoose.model('User', userSchema);

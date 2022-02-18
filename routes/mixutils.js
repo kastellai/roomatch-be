@@ -6,7 +6,7 @@ const Room = require("../models/room");
  * @param roomId - roomId created
  */
 exports.addRoomToUser = async (userId, roomId) => {
-  await User.updateOne({ _id: userId }, { $set: { roomId: roomId } })
+  await User.updateOne({ _id: userId }, { $set: { roomId: roomId }})
     .then((result) => {
       res.status(200).json(result);
     })
@@ -14,6 +14,27 @@ exports.addRoomToUser = async (userId, roomId) => {
       new Error(error);
     });
 };
+
+exports.removeRoomToUser = async (userId, roomId) => {
+  await User.updateOne({ _id: userId }, { $set: { roomId: roomId }})
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((error) => {
+      new Error(error);
+    });
+};
+
+exports.resetUser = async (userId) => {
+  await User.updateOne({ _id: userId }, { $set: { ilike: [] }, $set: { matches: [] }, $set: { wholikesme: [] }, $set: { newLike: [] }, $set: { newMatch: [] } })
+    .then((result) => {
+      res.status(200).json(result);
+    })
+    .catch((error) => {
+      new Error(error);
+    });
+};
+
 
 exports.updateRoomPreview = (updates) => {
   return {
@@ -26,6 +47,20 @@ exports.updateRoomPreview = (updates) => {
     wholikesme: updates.wholikesme,
     ilike: updates.ilike,
     matches: updates.matches,
+  };
+};
+
+exports.resetRoomPreview = (updates) => {
+  return {
+    roomId: '',
+    roomType: '',
+    city: '',
+    town: '',
+    roomPhotos: [],
+    friendlyWith: {},
+    wholikesme: [],
+    ilike: [],
+    matches: [],
   };
 };
 
@@ -127,6 +162,7 @@ const getMessageInfo = async (messages) => {
   let newMessages = {};
   let promises = [];
   Object.keys(messages).map(async (single) => {
+    single !== 'message' &&
     promises.push(
       new Promise((resolve, reject) => {
         User.findOne()
@@ -183,7 +219,9 @@ exports.getUserData = async (updates) => {
     ilike: updates.roomId.roomId ? await getUserInfo(updates.ilike) : await getRoomInfo(updates.ilike),
     matches: updates.roomId.roomId ? await getUserInfo(updates.matches) : await getRoomInfo(updates.matches),
     messages: await getMessageInfo(updates.messages),
-    token: updates.token
+    token: updates.token,
+    newLike: updates.newLike,
+    newMatch: updates.newMatch
   };
 };
 
