@@ -43,9 +43,7 @@ const userSchema = mongoose.Schema({
     ilike: [String],
     matches: [String],
   },
-  messages: { 
-    message: [Array], 
-  },
+  messages:  { type: Object, default: {}, minimize: false},
   token: { type: String },
   lastLogin: { type: Number },
   newLike: [String],
