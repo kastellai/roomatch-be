@@ -142,7 +142,7 @@ router.patch("/users/:id", async (req, res) => {
     .then((_) => {
       User.findOne()
         .where({ _id: userId })
-        .then((users) => res.status(200).json(users))
+        .then(async (users) => res.status(200).json(await getUserData(users)))
         .catch((error) => {
           res.status(500).json({
             message: error,
