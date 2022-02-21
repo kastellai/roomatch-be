@@ -30,6 +30,8 @@ const userSchema = mongoose.Schema({
     roomType: String,
     city: String,
     town: String,
+    rentPrice: String,
+    roomAddress: String,
     roomPhotos: String,
     friendlyWith: {
       lgbtq: Number,

@@ -62,6 +62,8 @@ router.post("/users", async (req, res) => {
       roomType: "",
       city: "",
       town: "",
+      rentPrice: "",
+      roomAddress: "",
       roomPhotos: "",
       friendlyWith: {
         lgbtq: "",
@@ -479,6 +481,29 @@ router.post("/update", async (req, res) => {
         message: error
       })
     })
+});
+
+////////// GET ROOMS WITH COMPATIBILITY
+router.post("/getusers", async (req, res) => {
+
+  User.find({}).lean()
+    .then(docs => {
+      let newDocs = docs.map(item => {
+        let compatibility = 0;
+        let percent = 0;
+        Object.keys(req.body).forEach(par => {
+          parseInt(item.iam[par]) === parseInt(req.body[par]) && compatibility++;
+          percent++;
+        })
+        return {...item, compatibility: parseInt((compatibility * 100)/percent)}
+      })
+      res.status(200).json(newDocs.sort((a, b) => (a.compatibility < b.compatibility ? 1: -1)));
+    })
+    .catch((error) => {
+      res.status(500).json({
+        message: error,
+      });
+    });
 });
 
 module.exports = router;

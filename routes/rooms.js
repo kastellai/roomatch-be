@@ -282,4 +282,28 @@ router.get("/rooms/:id/getlikes", async (req, res) => {
     });
 });
 
+
+////////// GET ROOMS WITH COMPATIBILITY
+router.post("/getrooms", async (req, res) => {
+
+  Room.find({}).lean()
+    .then(docs => {
+      let newDocs = docs.map(item => {
+        let compatibility = 0;
+        let percent = 0;
+        Object.keys(req.body).forEach(par => {
+          parseInt(item.friendlyWith[par]) === parseInt(req.body[par]) && compatibility++;
+          percent++;
+        })
+        return {...item, compatibility: parseInt((compatibility * 100)/percent)}
+      })
+      res.status(200).json(newDocs.sort((a, b) => (a.compatibility < b.compatibility ? 1: -1)));
+    })
+    .catch((error) => {
+      res.status(500).json({
+        message: error,
+      });
+    });
+});
+
 module.exports = router;

@@ -43,6 +43,8 @@ exports.updateRoomPreview = (updates) => {
     roomType: updates.roomType,
     city: updates.city,
     town: updates.town,
+    rentPrice: updates.rentPrice,
+    roomAddress: updates.roomAddress,
     roomPhotos: updates.roomPhotos[0],
     friendlyWith: updates.friendlyWith,
     wholikesme: updates.wholikesme,
