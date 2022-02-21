@@ -381,6 +381,6 @@ exports.checkMatch = async (userId, roomId) => {
     : [];
 
   roomMatched.length > 0 && userMatched.length > 0
-    ? updatedUserMatches(userIlike, roomIlike)
+    ? await updatedUserMatches(userIlike, roomIlike)
     : console.log("no match yet :( ");
 };
