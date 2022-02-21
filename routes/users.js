@@ -313,7 +313,7 @@ router.patch("/users/:id/addlike", async (req, res) => {
 
       await User.updateOne(
         { _id: userId },
-        { $set: { wholikesme: wholikesme }, $set: { newLike: newNewLike } }
+        { $set: { wholikesme: wholikesme, newLike: newNewLike }}
       );
 
       await Room.findById({ _id: req.body.roomId })
@@ -360,7 +360,7 @@ router.patch("/users/:id/removelike", async (req, res) => {
 
       await User.updateOne(
         { _id: userId },
-        { $set: { wholikesme: wholikesme }, $set: { newLike: newNewLike } }
+        { $set: { wholikesme: wholikesme, newLike: newNewLike } }
       );
 
       await Room.findById({ _id: req.body.roomId })
