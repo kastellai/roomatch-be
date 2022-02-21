@@ -138,7 +138,6 @@ const getRoomInfo = async (roomsId) => {
               {
                 roomId: result._id,
                 roomOwner: result.roomOwner,
-                roomOwner: result.roomOwner,
                 roomType: result.roomType,
                 roomPhoto: result.roomPhotos[0],
                 roomAddress: result.roomAddress,
