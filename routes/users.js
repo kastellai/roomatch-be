@@ -456,6 +456,56 @@ router.post("/message", async (req, res) => {
     });
 });
 
+router.post("/readmessage", async (req, res) => {
+  // payload:
+  // {
+  //   myId: 'vmvcm',
+  //   friendId: 'vvvv,
+  // }
+
+  await User.findById({ _id: req.body.myId })
+    .then(async result => {
+      if (result.messages[req.body.friendId]) {
+        let newMessages = result.messages[req.body.friendId].map(item => {
+          return {
+            ...item,
+            read: true,
+          };
+        });
+        await User.updateOne(
+          { _id: req.body.myId },
+          {
+            $set: {
+              messages: {
+                ...result.messages,
+                [req.body.friendId]: newMessages,
+              },
+            },
+          }
+        )
+          .then(async data => data)
+          .catch(error => new error());
+      } else {
+        res.status(200).json(await getUserData(result));
+      }
+    })
+    .catch(error => {
+      res.status(500).json({
+        message: error,
+      });
+    });
+
+  User.findById({ _id: req.body.myId })
+    .then(async result => {
+      res.status(200).json(await getUserData(result));
+    })
+    .catch(error => {
+      res.status(500).json({
+        message: error,
+      });
+    });
+});
+
 router.post("/update", async (req, res) => {
   // payload:
   // {
