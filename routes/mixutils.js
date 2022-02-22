@@ -196,6 +196,7 @@ const getMessageInfo = async messages => {
                       roomType: result.roomId.roomType,
                       city: result.roomId.city,
                       rentPrice: result.roomId.rentPrice,
+                      roomAddress: result.roomId.roomAddress,
                       town: result.roomId.town,
                       roomPhotos: result.roomId.roomPhotos,
                       friendlyWith: result.roomId.friendlyWith,
