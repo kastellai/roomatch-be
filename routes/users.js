@@ -20,10 +20,10 @@ const {
  */
 router.get("/users", async (_, res) => {
   User.find()
-    .then((docs) => {
+    .then(docs => {
       res.status(200).json(docs);
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -79,26 +79,26 @@ router.post("/users", async (req, res) => {
 
   User.find()
     .where({ email: req.body.email })
-    .then((result) => {
+    .then(result => {
       result.length
         ? res.status(400).json({
             message: "email already present in our system",
           })
         : user
             .save()
-            .then((_) => {
+            .then(_ => {
               res.status(201).json({
                 message: "record successfully created",
                 // createdUser: result
               });
             })
-            .catch((error) => {
+            .catch(error => {
               res.status(500).json({
                 error: error,
               });
             });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         messagge: error,
       });
@@ -112,7 +112,7 @@ router.get("/users/:id", async (req, res) => {
   const user_id = req.params["id"];
 
   User.findById({ _id: user_id })
-    .then(async (result) => {
+    .then(async result => {
       res.status(200).json(await getUserData(result));
       // User.find()
       //   .where({ _id: { $in: result.wholikesme } })
@@ -122,7 +122,7 @@ router.get("/users/:id", async (req, res) => {
       //     res.status(200).json(await getUserData(result));
       //   });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -141,17 +141,17 @@ router.patch("/users/:id", async (req, res) => {
   }
   // {"propName": "name", "value": "new_value"}
   User.updateOne({ _id: userId }, { $set: updateOps })
-    .then((_) => {
+    .then(_ => {
       User.findOne()
         .where({ _id: userId })
-        .then(async (users) => res.status(200).json(await getUserData(users)))
-        .catch((error) => {
+        .then(async users => res.status(200).json(await getUserData(users)))
+        .catch(error => {
           res.status(500).json({
             message: error,
           });
         });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -165,8 +165,8 @@ router.delete("/users/:id", async (req, res) => {
   const user_id = req.params["id"];
 
   User.deleteOne({ _id: user_id })
-    .then((result) => res.status(200).json(result))
-    .catch((error) => res.status(500).json({ message: error }));
+    .then(result => res.status(200).json(result))
+    .catch(error => res.status(500).json({ message: error }));
 });
 
 /**
@@ -175,9 +175,12 @@ router.delete("/users/:id", async (req, res) => {
  * @param token - is the generated token to set for the user
  */
 const setTokenUser = async (userId, token) => {
-  User.updateOne({ _id: userId }, { $set: { token: token }, $set: { lastLogin: Date.now() } })
-    .then((result) => result)
-    .catch((error) => new error());
+  User.updateOne(
+    { _id: userId },
+    { $set: { token: token }, $set: { lastLogin: Date.now() } }
+  )
+    .then(result => result)
+    .catch(error => new error());
 };
 
 /**
@@ -190,11 +193,11 @@ router.post("/login", async (req, res) => {
   User.findOne()
     .where({ email: req.body.email })
     .select("+password")
-    .then(async (result) => {
-      logged = await bcrypt.compare(req.body.password, result.password)
-        // : res.status(404).json({
-        //     message: "record not found",
-        //   });
+    .then(async result => {
+      logged = await bcrypt.compare(req.body.password, result.password);
+      // : res.status(404).json({
+      //     message: "record not found",
+      //   });
       if (logged) {
         const token = tokenGenerator(32, "#aA");
         await setTokenUser(result._id.toString(), token);
@@ -211,7 +214,7 @@ router.post("/login", async (req, res) => {
         res.status(400).json({ message: "wrong user or password" });
       }
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         error: "Error during login",
       });
@@ -224,7 +227,7 @@ router.post("/login", async (req, res) => {
 router.post("/logout", async (req, res) => {
   User.find()
     .where({ email: req.body.email }, { token: req.body.token })
-    .then(async (result) => {
+    .then(async result => {
       if (result.length) {
         const token = "";
         await setTokenUser(result[0]._id.toString(), token);
@@ -233,7 +236,7 @@ router.post("/logout", async (req, res) => {
         res.status(400).json({ message: "error during login" });
       }
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         error: error,
       });
@@ -247,14 +250,14 @@ router.get("/users/:id/adsroom", async (req, res) => {
   const userId = req.params["id"];
   Room.findOne()
     .where({ roomOwner: userId })
-    .then((room) => {
+    .then(room => {
       room
         ? res.status(200).json(room)
         : res
             .status(200)
             .json({ message: "No room present for current user!" });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -269,13 +272,13 @@ router.get("/users/:id/wholikesmyroom", async (req, res) => {
 
   Room.findOne()
     .where({ roomOwner: userId })
-    .then((room) => {
+    .then(room => {
       room
         ? User.find()
             .where({ _id: { $in: room.wholikesme } })
-            .then((users) => {
+            .then(users => {
               const usersList = [];
-              users.forEach((user) =>
+              users.forEach(user =>
                 usersList.push(usersInterestedInRoom(user))
               );
               res.status(200).json(usersList);
@@ -291,7 +294,7 @@ router.get("/users/:id/wholikesmyroom", async (req, res) => {
             .status(200)
             .json({ message: "No user interested in the current ads!" });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -305,42 +308,39 @@ router.get("/users/:id/wholikesmyroom", async (req, res) => {
  **/
 router.patch("/users/:id/addlike", async (req, res) => {
   const userId = req.params["id"];
- 
+
   await User.findById({ _id: userId })
-    .then(async (result) => {
+    .then(async result => {
       let wholikesme = result.wholikesme;
       wholikesme.push(req.body.roomId);
       let newNewLike = result.newLike;
-      newNewLike.push(req.body.roomId)
+      newNewLike.push(req.body.roomId);
 
       await User.updateOne(
         { _id: userId },
-        { $set: { wholikesme: wholikesme, newLike: newNewLike }}
+        { $set: { wholikesme: wholikesme, newLike: newNewLike } }
       );
 
-      await Room.findById({ _id: req.body.roomId })
-      .then(async (result) => {
+      await Room.findById({ _id: req.body.roomId }).then(async result => {
         let ilike = result.ilike;
-        ilike.push(userId)
+        ilike.push(userId);
 
         await Room.updateOne(
           { _id: req.body.roomId },
           { $set: { ilike: ilike } }
         );
-      })
-
-
-      // update room preview in user record
-      await Room.findById({ _id: req.body.roomId }).then(async (result) => {
-        await addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        await checkMatch(userId, req.body.roomId);
-        await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
-            res.status(200).json(await getUserData(userUpdated))
-        );
       });
 
+      // update room preview in user record
+      await Room.findById({ _id: req.body.roomId }).then(async result => {
+        await addRoomToUser(result.roomOwner, updateRoomPreview(result));
+        await checkMatch(userId, req.body.roomId);
+        await User.findById({ _id: result.roomOwner }).then(async userUpdated =>
+          res.status(200).json(await getUserData(userUpdated))
+        );
+      });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -356,34 +356,33 @@ router.patch("/users/:id/removelike", async (req, res) => {
   const userId = req.params["id"];
 
   User.findById({ _id: userId })
-    .then(async (result) => {
-      let wholikesme = result.wholikesme.filter((id) => id !== req.body.roomId);
-      let newNewLike = result.newLike.filter((id) => id !== req.body.roomId);
+    .then(async result => {
+      let wholikesme = result.wholikesme.filter(id => id !== req.body.roomId);
+      let newNewLike = result.newLike.filter(id => id !== req.body.roomId);
 
       await User.updateOne(
         { _id: userId },
         { $set: { wholikesme: wholikesme, newLike: newNewLike } }
       );
 
-      await Room.findById({ _id: req.body.roomId })
-      .then(async (result) => {
-        let ilike = result.ilike.filter((id) => id !== userId)
-        
+      await Room.findById({ _id: req.body.roomId }).then(async result => {
+        let ilike = result.ilike.filter(id => id !== userId);
+
         await Room.updateOne(
           { _id: req.body.roomId },
           { $set: { ilike: ilike } }
         );
-      })
+      });
 
       // update room preview in user record
-      await Room.findById({ _id: req.body.roomId }).then(async (result) => {
+      await Room.findById({ _id: req.body.roomId }).then(async result => {
         await addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
-            res.status(200).json(await getUserData(userUpdated))
+        await User.findById({ _id: result.roomOwner }).then(async userUpdated =>
+          res.status(200).json(await getUserData(userUpdated))
         );
       });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -405,17 +404,26 @@ router.post("/message", async (req, res) => {
   // }
 
   await User.findById({ _id: req.body.myId })
-    .then(async (result) => {
+    .then(async result => {
       await User.updateOne(
         { _id: req.body.myId },
-        {$set: {
+        {
+          $set: {
             messages: {
               ...result.messages,
               [req.body.friendId]: result.messages[req.body.friendId]
-                ? [...result.messages[req.body.friendId], req.body.message]
-                : [req.body.message]}}});})
+                ? [
+                    ...result.messages[req.body.friendId],
+                    { ...req.body.message, read: true },
+                  ]
+                : [{ ...req.body.message, read: true }],
+            },
+          },
+        }
+      );
+    })
     .then(
-      User.findById({ _id: req.body.friendId }).then(async (result) => {
+      User.findById({ _id: req.body.friendId }).then(async result => {
         await User.updateOne(
           { _id: req.body.friendId },
           {
@@ -430,76 +438,80 @@ router.post("/message", async (req, res) => {
           }
         );
       })
-    ).catch((error) => {
+    )
+    .catch(error => {
       res.status(500).json({
-        message: error
-      })
-    })
+        message: error,
+      });
+    });
 
-
-    User.findById({ _id: req.body.myId })
-    .then(async (result) => {
-      
+  User.findById({ _id: req.body.myId })
+    .then(async result => {
       res.status(200).json(await getUserData(result));
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
     });
 });
 
-
-
 router.post("/update", async (req, res) => {
-
   // payload:
   // {
   //   myId: 'vmvcm',
   //   token: 'vmvmvmv'
   // }
- 
+
   await User.findById({ _id: req.body.myId })
-    .then(async (result) => {
-      const diff = (Date.now() - result.lastLogin) / 60000
+    .then(async result => {
+      const diff = (Date.now() - result.lastLogin) / 60000;
       if (result.token === req.body.token && diff < 30) {
-        User.updateOne({ _id: req.body.myId }, { $set: { lastLogin: Date.now() } })
-          .then((result) => result)
-          .catch((error) => new error());
+        User.updateOne(
+          { _id: req.body.myId },
+          { $set: { lastLogin: Date.now() } }
+        )
+          .then(result => result)
+          .catch(error => new error());
         res.status(200).json(await getUserData(result));
-      }
-      else {
+      } else {
         res.status(401).json({
-          message: 'Unauthorized'
+          message: "Unauthorized",
         });
       }
-      
-    }
-    )
-    .catch((error) => {
-      res.status(500).json({
-        message: error
-      })
     })
+    .catch(error => {
+      res.status(500).json({
+        message: error,
+      });
+    });
 });
 
 ////////// GET ROOMS WITH COMPATIBILITY
 router.post("/getusers", async (req, res) => {
-
-  User.find({}).lean()
+  User.find({})
+    .lean()
     .then(docs => {
       let newDocs = docs.map(item => {
         let compatibility = 0;
         let percent = 0;
         Object.keys(req.body).forEach(par => {
-          parseInt(item.iam[par]) === parseInt(req.body[par]) && compatibility++;
+          parseInt(item.iam[par]) === parseInt(req.body[par]) &&
+            compatibility++;
           percent++;
-        })
-        return {...item, compatibility: parseInt((compatibility * 100)/percent)}
-      })
-      res.status(200).json(newDocs.sort((a, b) => (a.compatibility < b.compatibility ? 1: -1)));
+        });
+        return {
+          ...item,
+          compatibility: parseInt((compatibility * 100) / percent),
+        };
+      });
+      res
+        .status(200)
+        .json(
+          newDocs.sort((a, b) => (a.compatibility < b.compatibility ? 1 : -1))
+        );
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
