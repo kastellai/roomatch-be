@@ -38,6 +38,7 @@ exports.resetUser = async userId => {
       $set: { wholikesme: [] },
       $set: { newLike: [] },
       $set: { newMatch: [] },
+      $set: { messages: {} },
     }
   )
     .then(result => {

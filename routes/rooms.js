@@ -14,16 +14,16 @@ const {
   getUserData,
   resetUser,
   removeRoomToUser,
-  resetRoomPreview
+  resetRoomPreview,
 } = require("../routes/mixutils");
 
 router.get("/rooms", async (req, res) => {
   const query = req.query;
   Room.find(query)
-    .then((docs) => {
+    .then(docs => {
       res.status(200).json(docs);
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -67,19 +67,19 @@ router.post("/rooms", async (req, res) => {
 
   room
     .save()
-    .then(async (result) => {
+    .then(async result => {
       await addRoomToUser(req.body.roomOwner, updateRoomPreview(result));
       // RIMUOVI LIKES DA WHOLIKESME
-      await resetUser(req.body.roomOwner)
-      await User.findById({ _id: req.body.roomOwner }).then(async (userUpdated) =>
-            res.status(200).json(await getUserData(userUpdated))
-        )
+      await resetUser(req.body.roomOwner);
+      await User.findById({ _id: req.body.roomOwner }).then(async userUpdated =>
+        res.status(200).json(await getUserData(userUpdated))
+      );
       // res.status(201).json({
       //   message: "record successfully created",
       //   createdUser: result,
       // });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         error: error,
       });
@@ -90,10 +90,10 @@ router.get("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId })
-    .then((result) => {
+    .then(result => {
       res.status(200).json(result);
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -110,16 +110,16 @@ router.patch("/rooms/:id", async (req, res) => {
   // {"propName": "name", "value": "new_value"}
 
   Room.updateOne({ _id: roomId }, { $set: updateOps })
-    .then((_) => {
+    .then(_ => {
       // update room preview in user record
-      Room.findById({ _id: roomId }).then(async (result) => {
+      Room.findById({ _id: roomId }).then(async result => {
         await addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        await User.findById({ _id: roomOwner }).then(async (userUpdated) =>
-            res.status(200).json(await getUserData(userUpdated))
-        )
+        await User.findById({ _id: roomOwner }).then(async userUpdated =>
+          res.status(200).json(await getUserData(userUpdated))
+        );
       });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -129,20 +129,32 @@ router.patch("/rooms/:id", async (req, res) => {
 router.delete("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
 
-  Room.findById({ _id: roomId }).then(async (result) => {
-    await User.updateOne({ _id: result.roomOwner }, { $set: { roomId: resetRoomPreview() }})
-    await User.updateOne({ _id: result.roomOwner }, { $set: { ilike: [] }, $set: { matches: [] }, $set: { wholikesme: [] }, $set: { newLike: [] }, $set: { newMatch: [] } })
-    
-  //  await resetUser(result.roomOwner)
-    await Room.deleteOne({ _id: roomId })
-      .then(async (data) => {
-        await User.findById({ _id: result.roomOwner }).then(async (userUpdated) =>
-          res.status(200).json(await getUserData(userUpdated))
-      )
-      })
-      .catch((error) => res.status(500).json({ message: error }));
-  });
+  Room.findById({ _id: roomId }).then(async result => {
+    await User.updateOne(
+      { _id: result.roomOwner },
+      { $set: { roomId: resetRoomPreview() } }
+    );
+    await User.updateOne(
+      { _id: result.roomOwner },
+      {
+        $set: { ilike: [] },
+        $set: { matches: [] },
+        $set: { wholikesme: [] },
+        $set: { newLike: [] },
+        $set: { newMatch: [] },
+        $set: { messages: {} },
+      }
+    );
 
+    //  await resetUser(result.roomOwner)
+    await Room.deleteOne({ _id: roomId })
+      .then(async data => {
+        await User.findById({ _id: result.roomOwner }).then(async userUpdated =>
+          res.status(200).json(await getUserData(userUpdated))
+        );
+      })
+      .catch(error => res.status(500).json({ message: error }));
+  });
 });
 
 /**
@@ -154,53 +166,49 @@ router.patch("/rooms/:id/addlike", async (req, res) => {
   const roomId = req.params["id"];
 
   await Room.findById({ _id: roomId })
-    .then(async (result) => {
+    .then(async result => {
       let wholikesme = result.wholikesme;
       wholikesme.push(req.body.userId);
 
-      await User.findById({ _id: result.roomOwner })
-      .then(async (result) => {
+      await User.findById({ _id: result.roomOwner }).then(async result => {
         let newNewLike = result.newLike;
         newNewLike.push(req.body.userId);
 
-
         await User.updateOne(
           { _id: result._id },
-          { $set: { newLike: newNewLike }}
-          )
-        });
-        
+          { $set: { newLike: newNewLike } }
+        );
+      });
+
       await Room.updateOne(
         { _id: roomId },
-        { $set: { wholikesme: wholikesme }}
+        { $set: { wholikesme: wholikesme } }
       );
 
-      await User.findById({ _id: req.body.userId })
-      .then(async (result) => {
+      await User.findById({ _id: req.body.userId }).then(async result => {
         let ilike = result.ilike;
         ilike.push(roomId);
 
         await User.updateOne(
           { _id: req.body.userId },
-          { $set: { ilike: ilike }}
+          { $set: { ilike: ilike } }
         );
       });
 
-      await Room.findById({ _id: roomId }).then((result) => {
+      await Room.findById({ _id: roomId }).then(result => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
       });
       await checkMatch(req.body.userId, roomId);
-      await User.findById({ _id: req.body.userId }).then(async (userUpdated) =>
+      await User.findById({ _id: req.body.userId }).then(async userUpdated =>
         res.status(200).json(await getUserData(userUpdated))
       );
     })
 
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
     });
-
 });
 
 /**
@@ -212,27 +220,25 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId })
-    .then(async (result) => {
-      let wholikesme = result.wholikesme.filter((id) => id !== req.body.userId);
+    .then(async result => {
+      let wholikesme = result.wholikesme.filter(id => id !== req.body.userId);
 
-      await User.findById({ _id: result.roomOwner })
-      .then(async (result) => {
-        let newNewLike = result.newLike.filter((id) => id !== req.body.userId);
-     
+      await User.findById({ _id: result.roomOwner }).then(async result => {
+        let newNewLike = result.newLike.filter(id => id !== req.body.userId);
+
         await User.updateOne(
           { _id: result._id },
-          { $set: { newLike: newNewLike }}
-          )
-        });
-      
+          { $set: { newLike: newNewLike } }
+        );
+      });
+
       await Room.updateOne(
         { _id: roomId },
-        { $set: { wholikesme: wholikesme }}
+        { $set: { wholikesme: wholikesme } }
       );
 
-      await User.findById({ _id: req.body.userId })
-      .then(async (result) => {
-        let ilike = result.ilike.filter((id) => id !== roomId);
+      await User.findById({ _id: req.body.userId }).then(async result => {
+        let ilike = result.ilike.filter(id => id !== roomId);
 
         await User.updateOne(
           { _id: req.body.userId },
@@ -240,17 +246,15 @@ router.patch("/rooms/:id/removelike", async (req, res) => {
         );
       });
 
-      await Room.findById({ _id: roomId }).then((result) => {
+      await Room.findById({ _id: roomId }).then(result => {
         addRoomToUser(result.roomOwner, updateRoomPreview(result));
       });
 
-      await User.findById({ _id: req.body.userId }).then(async (userUpdated) =>
+      await User.findById({ _id: req.body.userId }).then(async userUpdated =>
         res.status(200).json(await getUserData(userUpdated))
       );
-
-
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
@@ -266,40 +270,47 @@ router.get("/rooms/:id/getlikes", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId })
-    .then((result) => {
+    .then(result => {
       User.find()
         .where({ _id: { $in: result.wholikesme } })
-        .then((users) => {
+        .then(users => {
           const usersList = [];
-          users.forEach((user) => usersList.push(usersInterestedInRoom(user)));
+          users.forEach(user => usersList.push(usersInterestedInRoom(user)));
           res.status(200).json(usersList);
         });
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
     });
 });
 
-
 ////////// GET ROOMS WITH COMPATIBILITY
 router.post("/getrooms", async (req, res) => {
-
-  Room.find({}).lean()
+  Room.find({})
+    .lean()
     .then(docs => {
       let newDocs = docs.map(item => {
         let compatibility = 0;
         let percent = 0;
         Object.keys(req.body).forEach(par => {
-          parseInt(item.friendlyWith[par]) === parseInt(req.body[par]) && compatibility++;
+          parseInt(item.friendlyWith[par]) === parseInt(req.body[par]) &&
+            compatibility++;
           percent++;
-        })
-        return {...item, compatibility: parseInt((compatibility * 100)/percent)}
-      })
-      res.status(200).json(newDocs.sort((a, b) => (a.compatibility < b.compatibility ? 1: -1)));
+        });
+        return {
+          ...item,
+          compatibility: parseInt((compatibility * 100) / percent),
+        };
+      });
+      res
+        .status(200)
+        .json(
+          newDocs.sort((a, b) => (a.compatibility < b.compatibility ? 1 : -1))
+        );
     })
-    .catch((error) => {
+    .catch(error => {
       res.status(500).json({
         message: error,
       });
