@@ -33,12 +33,20 @@ exports.resetUser = async userId => {
   await User.updateOne(
     { _id: userId },
     {
-      $set: { ilike: [] },
-      $set: { matches: [] },
-      $set: { wholikesme: [] },
-      $set: { newLike: [] },
-      $set: { newMatch: [] },
-      $set: { messages: {} },
+      $set: {
+        ilike: [],
+        matches: [],
+        wholikesme: [],
+        newLike: [],
+        newMatch: [],
+        messages: {},
+      },
+      // $set: { ilike: [] },
+      // $set: { matches: [] },
+      // $set: { wholikesme: [] },
+      // $set: { newLike: [] },
+      // $set: { newMatch: [] },
+      // $set: { messages: {} },
     }
   )
     .then(result => {

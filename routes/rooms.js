@@ -137,12 +137,19 @@ router.delete("/rooms/:id", async (req, res) => {
     await User.updateOne(
       { _id: result.roomOwner },
       {
-        $set: { ilike: [] },
-        $set: { matches: [] },
-        $set: { wholikesme: [] },
-        $set: { newLike: [] },
-        $set: { newMatch: [] },
-        $set: { messages: {} },
+        $set: {
+          ilike: [],
+          matches: [],
+          wholikesme: [],
+          newLike: [],
+          newMatch: [],
+          messages: {},
+        },
+        // $set: { matches: [] },
+        // $set: { wholikesme: [] },
+        // $set: { newLike: [] },
+        // $set: { newMatch: [] },
+        // $set: { messages: {} },
       }
     );
 
