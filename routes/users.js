@@ -537,7 +537,7 @@ router.post("/update", async (req, res) => {
     });
 });
 
-////////// GET ROOMS WITH COMPATIBILITY
+////////// GET USERS WITH COMPATIBILITY
 router.post("/getusers", async (req, res) => {
   User.find({})
     .lean()
