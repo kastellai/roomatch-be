@@ -70,14 +70,74 @@ router.post("/rooms", async (req, res) => {
     .then(async result => {
       await addRoomToUser(req.body.roomOwner, updateRoomPreview(result));
       // RIMUOVI LIKES DA WHOLIKESME
-      await resetUser(req.body.roomOwner);
-      await User.findById({ _id: req.body.roomOwner }).then(async userUpdated =>
-        res.status(200).json(await getUserData(userUpdated))
-      );
-      // res.status(201).json({
-      //   message: "record successfully created",
-      //   createdUser: result,
-      // });
+
+      User.findById({ _id: req.body.roomOwner }).then(
+        async result => {
+          const ilikesList = result.ilike;
+          const wholikesList = result.wholikesme;
+          const matchesList = result.matches;
+          const newLikeList = result.newLike;
+          const newMatchList = result.newMatch;
+          let roomsList = ilikesList.concat(wholikesList).concat(matchesList).concat(newLikeList).concat(newMatchList);
+          roomsList = [...new Set([...ilikesList, ...wholikesList, ...matchesList])]
+
+          roomsList.forEach(async (id) => {
+            const roomRecord = await Room.findById({ _id: id });
+
+            const ilikeUpdated = roomRecord.ilike?.filter(item => item !== req.body.roomOwner)
+            const wholikesmeUpdated = roomRecord.wholikesme?.filter(item => item !== req.body.roomOwner);
+            const matchesUpdated = roomRecord.matches?.filter(item => item !== req.body.roomOwner);
+
+            await Room.findByIdAndUpdate(
+              { _id: id },
+              {
+                $set: {
+                  ilike: ilikeUpdated,
+                  wholikesme: wholikesmeUpdated,
+                  matches: matchesUpdated,
+                }
+              })
+            // .then(res => console.log(`deleted: 
+            // ilikeUpdated: ${ilikeUpdated.length ? ilikeUpdated : []}
+            // wholikesmeUpdated: ${wholikesmeUpdated.length ? wholikesmeUpdated : []}
+            // matchesUpdated: ${matchesUpdated.length ? matchesUpdated : []}
+            // `));
+
+            const userRecord = await User.findById({ _id: roomRecord.roomOwner });
+            const newLikeUpdated = userRecord.newLike?.filter(item => item !== req.body.roomOwner);
+            const newMatchUpdated = userRecord.newMatch?.filter(item => item !== req.body.roomOwner);
+            delete userRecord.messages[req.body.roomOwner]
+            const messagesUpdated = userRecord.messages;
+
+            await User.findByIdAndUpdate(
+              { _id: roomRecord.roomOwner },
+              {
+                $set: {
+                  newLike: newLikeUpdated,
+                  newMatch: newMatchUpdated,
+                  messages: messagesUpdated
+                }
+              })
+            // .then(res => console.log(`deleted: 
+            //     newMatchUpdated: ${newLikeUpdated.length ? newLikeUpdated : []}
+            //     newLikeUpdated: ${newMatchUpdated.length ? newMatchUpdated : []}
+            //     messagesUpdated: ${messagesUpdated.length ? messagesUpdated : []}
+            //     `));
+            const roomUserUpdated = await Room.findById({ _id: id });
+            await addRoomToUser(roomRecord.roomOwner, updateRoomPreview(roomUserUpdated));
+          })
+
+          await resetUser(req.body.roomOwner);
+
+          await User.findById({ _id: req.body.roomOwner }).then(async userUpdated =>
+            res.status(200).json(await getUserData(userUpdated))
+          );
+          // res.status(201).json({
+          //   message: "record successfully created",
+          //   createdUser: result,
+          // });
+        })
+
     })
     .catch(error => {
       res.status(500).json({
@@ -85,6 +145,7 @@ router.post("/rooms", async (req, res) => {
       });
     });
 });
+
 
 router.get("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
@@ -130,6 +191,37 @@ router.delete("/rooms/:id", async (req, res) => {
   const roomId = req.params["id"];
 
   Room.findById({ _id: roomId }).then(async result => {
+    const ilikesList = result.ilike ? result.ilike : [];
+    const wholikesList = result.wholikesme ? result.wholikesme : [];
+    const matchesList = result.matches ? result.matches : [];
+    let usersList = ilikesList.concat(wholikesList).concat(matchesList);
+    usersList = [...new Set([...ilikesList, ...wholikesList, ...matchesList])]
+
+    usersList.forEach(async (id) => {
+      const userRecord = await User.findById({ _id: id });
+      const ilikeUpdated = userRecord.ilike?.filter(item => item !== roomId)
+      const wholikesmeUpdated = userRecord.wholikesme?.filter(item => item !== roomId);
+      const matchesUpdated = userRecord.matches?.filter(item => item !== roomId);
+      const newLikeUpdated = userRecord.newLike?.filter(item => item !== roomId);
+      const newMatchUpdated = userRecord.newMatch?.filter(item => item !== roomId);
+
+      delete userRecord.messages[result?.roomOwner]
+      const messagesUpdated = userRecord.messages;
+
+      await User.findByIdAndUpdate(
+        { _id: id },
+        {
+          $set: {
+            ilike: ilikeUpdated,
+            wholikesme: wholikesmeUpdated,
+            matches: matchesUpdated,
+            newLike: newLikeUpdated,
+            newMatch: newMatchUpdated,
+            messages: messagesUpdated
+          }
+        })
+    })
+
     await User.updateOne(
       { _id: result.roomOwner },
       { $set: { roomId: resetRoomPreview() } }
