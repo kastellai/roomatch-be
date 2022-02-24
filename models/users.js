@@ -46,6 +46,7 @@ const userSchema = mongoose.Schema({
     matches: [String],
   },
   messages: { message: [] },
+  // messages:  { type: Object, default: {}, minimize: false},
   token: { type: String },
   lastLogin: { type: Number },
   newLike: [String],
