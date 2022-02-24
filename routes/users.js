@@ -177,7 +177,7 @@ router.delete("/users/:id", async (req, res) => {
 const setTokenUser = async (userId, token) => {
   User.updateOne(
     { _id: userId },
-    { $set: { token: token }, $set: { lastLogin: Date.now() } }
+    { $set: { token: token, lastLogin: Date.now() } }
   )
     .then(result => result)
     .catch(error => new error());
