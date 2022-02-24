@@ -39,7 +39,7 @@ exports.resetUser = async userId => {
         wholikesme: [],
         newLike: [],
         newMatch: [],
-        messages: {},
+        messages: { message: [] },
       },
       // $set: { ilike: [] },
       // $set: { matches: [] },

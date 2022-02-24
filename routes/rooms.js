@@ -235,7 +235,7 @@ router.delete("/rooms/:id", async (req, res) => {
           wholikesme: [],
           newLike: [],
           newMatch: [],
-          messages: {},
+          messages: { message: [] },
         },
         // $set: { matches: [] },
         // $set: { wholikesme: [] },
