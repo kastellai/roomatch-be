@@ -191,6 +191,7 @@ router.post("/login", async (req, res) => {
   let logged = false;
 
   User.findOne()
+    .lean()
     .where({ email: req.body.email })
     .select("+password")
     .then(async result => {
@@ -516,8 +517,6 @@ router.post("/update", async (req, res) => {
   await User.findById({ _id: req.body.myId })
     .then(async result => {
       const diff = (Date.now() - result.lastLogin) / 60000;
-      console.log("inviato: " + req.body.token);
-      console.log("db: " + result.token);
       if (result.token === req.body.token && diff < 30) {
         User.updateOne(
           { _id: req.body.myId },
