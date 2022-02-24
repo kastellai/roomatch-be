@@ -516,7 +516,7 @@ router.post("/update", async (req, res) => {
   await User.findById({ _id: req.body.myId })
     .then(async result => {
       const diff = (Date.now() - result.lastLogin) / 60000;
-      if (result.token === req.body.token && diff < 30) {
+      if (diff < 30) {
         User.updateOne(
           { _id: req.body.myId },
           { $set: { lastLogin: Date.now() } }
