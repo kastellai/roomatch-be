@@ -175,7 +175,7 @@ router.patch("/rooms/:id", async (req, res) => {
       // update room preview in user record
       Room.findById({ _id: roomId }).then(async result => {
         await addRoomToUser(result.roomOwner, updateRoomPreview(result));
-        await User.findById({ _id: roomOwner }).then(async userUpdated =>
+        await User.findById({ _id: result.roomOwner }).then(async userUpdated =>
           res.status(200).json(await getUserData(userUpdated))
         );
       });
