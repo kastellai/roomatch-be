@@ -75,11 +75,24 @@ exports.updateRoomPreview = updates => {
 
 exports.resetRoomPreview = () => {
   return {
-    roomId: "",
-    roomType: "",
-    city: "",
-    town: "",
-    roomPhotos: "",
+    "roomId": "",
+    "roomType": "",
+    "city": "",
+    "town": "",
+    "rentPrice": "",
+    "roomAddress": "",
+    "roomPhotos": "",
+    "friendlyWith": {
+      "lgbtq": null,
+      "multicultural": null,
+      "pet_owner": null,
+      "veg": null,
+      "party_lover": null,
+      "smooker": null
+    },
+    "wholikesme": [],
+    "ilike": [],
+    "matches": []
   };
 };
 
