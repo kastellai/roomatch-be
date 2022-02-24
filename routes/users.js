@@ -57,6 +57,7 @@ router.post("/users", async (req, res) => {
     city: req.body.city,
     town: req.body.town,
     photo: req.body.photo,
+    messages: { message: [] },
     roomId: {
       roomId: "",
       roomType: "",
@@ -82,21 +83,21 @@ router.post("/users", async (req, res) => {
     .then(result => {
       result.length
         ? res.status(400).json({
-            message: "email already present in our system",
-          })
+          message: "email already present in our system",
+        })
         : user
-            .save()
-            .then(_ => {
-              res.status(201).json({
-                message: "record successfully created",
-                // createdUser: result
-              });
-            })
-            .catch(error => {
-              res.status(500).json({
-                error: error,
-              });
+          .save()
+          .then(_ => {
+            res.status(201).json({
+              message: "record successfully created",
+              // createdUser: result
             });
+          })
+          .catch(error => {
+            res.status(500).json({
+              error: error,
+            });
+          });
     })
     .catch(error => {
       res.status(500).json({
@@ -255,8 +256,8 @@ router.get("/users/:id/adsroom", async (req, res) => {
       room
         ? res.status(200).json(room)
         : res
-            .status(200)
-            .json({ message: "No room present for current user!" });
+          .status(200)
+          .json({ message: "No room present for current user!" });
     })
     .catch(error => {
       res.status(500).json({
@@ -276,24 +277,24 @@ router.get("/users/:id/wholikesmyroom", async (req, res) => {
     .then(room => {
       room
         ? User.find()
-            .where({ _id: { $in: room.wholikesme } })
-            .then(users => {
-              const usersList = [];
-              users.forEach(user =>
-                usersList.push(usersInterestedInRoom(user))
-              );
-              res.status(200).json(usersList);
-            })
+          .where({ _id: { $in: room.wholikesme } })
+          .then(users => {
+            const usersList = [];
+            users.forEach(user =>
+              usersList.push(usersInterestedInRoom(user))
+            );
+            res.status(200).json(usersList);
+          })
         : // TODO - a questo punto, ho la lista di utenti interessati alla mia camera. Per verificare che ci sia gia il match:
-          // si controlla l array wholikesme salvato nello storage dell utente ?
-          //
-          // for userId in users
-          //  if  localStorageUtente.wholikesme contains userId -> esiste il match quindi chat ok
-          // else -> "Potenziale coinquilino, ti potrebbe interessare?"
-          //
-          res
-            .status(200)
-            .json({ message: "No user interested in the current ads!" });
+        // si controlla l array wholikesme salvato nello storage dell utente ?
+        //
+        // for userId in users
+        //  if  localStorageUtente.wholikesme contains userId -> esiste il match quindi chat ok
+        // else -> "Potenziale coinquilino, ti potrebbe interessare?"
+        //
+        res
+          .status(200)
+          .json({ message: "No user interested in the current ads!" });
     })
     .catch(error => {
       res.status(500).json({
@@ -414,9 +415,9 @@ router.post("/message", async (req, res) => {
               ...result.messages,
               [req.body.friendId]: result.messages[req.body.friendId]
                 ? [
-                    ...result.messages[req.body.friendId],
-                    { ...req.body.message, read: true },
-                  ]
+                  ...result.messages[req.body.friendId],
+                  { ...req.body.message, read: true },
+                ]
                 : [{ ...req.body.message, read: true }],
             },
           },
@@ -486,9 +487,10 @@ router.post("/readmessage", async (req, res) => {
         )
           .then(async data => data)
           .catch(error => new error());
-      } else {
-        res.status(200).json(await getUserData(result));
       }
+      // else {
+      //   res.status(200).json(await getUserData(result));
+      // }
     })
     .catch(error => {
       res.status(500).json({
