@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 // https://mongoosejs.com/docs/schematypes.html
 // https://stackabuse.com/mongoose-with-nodejs-object-data-modeling/
 // https://heynode.com/blog/2020-04/salt-and-hash-passwords-bcrypt/
@@ -45,11 +45,11 @@ const userSchema = mongoose.Schema({
     ilike: [String],
     matches: [String],
   },
-  messages:  { type: Object, default: {}, minimize: false},
+  messages: { message: [] },
   token: { type: String },
   lastLogin: { type: Number },
   newLike: [String],
-  newMatch: [String]
+  newMatch: [String],
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);
