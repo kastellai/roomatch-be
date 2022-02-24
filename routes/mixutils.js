@@ -121,6 +121,7 @@ const getUserInfo = async usersId => {
               {
                 name: result.name,
                 surname: result.surname,
+                age: result.age,
                 photo: result.photo,
                 city: result.city,
                 town: result.town,
