@@ -201,7 +201,7 @@ router.post("/login", async (req, res) => {
       if (logged) {
         const token = tokenGenerator(32, "#aA");
         await setTokenUser(result._id.toString(), token);
-        res.status(200).json(await getUserData(result));
+        res.status(200).json(await getUserData({ ...result, token: token }));
         // console.log(await getUserData(result))
         // User.find()
         //   .where({ _id: { $in: result.wholikesme } })
@@ -516,7 +516,9 @@ router.post("/update", async (req, res) => {
   await User.findById({ _id: req.body.myId })
     .then(async result => {
       const diff = (Date.now() - result.lastLogin) / 60000;
-      if (diff < 30) {
+      console.log("inviato: " + req.body.token);
+      console.log("db: " + result.token);
+      if (result.token === req.body.token && diff < 30) {
         User.updateOne(
           { _id: req.body.myId },
           { $set: { lastLogin: Date.now() } }
