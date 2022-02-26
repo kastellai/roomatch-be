@@ -218,7 +218,7 @@ router.post("/login", async (req, res) => {
     })
     .catch(error => {
       res.status(400).json({
-        message: "email not in our systems",
+        message: "email is not in our systems",
       });
     });
 });
