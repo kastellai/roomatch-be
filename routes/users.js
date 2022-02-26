@@ -213,12 +213,12 @@ router.post("/login", async (req, res) => {
         //     res.status(200).json(await getUserData(result, usersList));
         //   });
       } else {
-        res.status(400).json({ message: "wrong email or password" });
+        res.status(400).json({ message: "wrong password" });
       }
     })
     .catch(error => {
       res.status(400).json({
-        message: "wrong email or password",
+        message: "email not in our systems",
       });
     });
 });
